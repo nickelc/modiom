@@ -1,0 +1,30 @@
+[package]
+name = "modiom"
+version = "0.1.0"
+description = "command line tool for mod.io"
+readme = "README.md"
+authors = ["Constantin Nickel <constantin.nickel@gmail.com>"]
+
+[[bin]]
+name = "modiom"
+
+[dependencies]
+clap = "2"
+dirs = "1"
+futures = "0.1"
+lazycell = "1"
+nom = "4"
+pbr = "1"
+reqwest = "0.9"
+serde = "1"
+serde_derive = "1"
+tokio = "0.1"
+toml = "0.4"
+
+[dependencies.modio]
+version = "0.2"
+
+[dependencies.config]
+version = "0.9"
+default-features = false
+features = ["toml"]
