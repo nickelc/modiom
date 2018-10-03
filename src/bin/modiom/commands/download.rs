@@ -1,8 +1,7 @@
 use std::fs::File;
-use std::io::{self, Read};
+use std::io;
 use std::path::PathBuf;
 
-use pbr;
 use reqwest;
 use tokio::runtime::Runtime;
 
@@ -13,6 +12,7 @@ use modio::filter::Operator;
 use modio::mods::ModsListOptions;
 use modio::Modio;
 use modiom::config::Config;
+use progress::ProgressWrapper;
 
 pub fn cli() -> App {
     subcommand("download")
@@ -67,28 +67,10 @@ pub fn exec(config: &Config, args: &ArgMatches) -> CliResult {
                     );
                     let mut res = reqwest::get(file.download.binary_url)?;
 
-                    struct ResponsePB<T> {
-                        inner: T,
-                        pb: pbr::ProgressBar<::std::io::Stdout>,
-                    }
-
-                    impl<T: Read> Read for ResponsePB<T> {
-                        fn read(&mut self, buf: &mut [u8]) -> Result<usize, ::std::io::Error> {
-                            let res = self.inner.read(buf);
-                            if let Ok(size) = res {
-                                self.pb.add(size as u64);
-                            }
-                            res
-                        }
-                    }
-                    let mut pb = pbr::ProgressBar::new(file.filesize);
-                    pb.set_units(pbr::Units::Bytes);
-
-                    let mut input = ResponsePB { inner: res, pb };
-
                     let mut out = File::create(dest.join(file.filename))?;
-                    io::copy(&mut input, &mut out)?;
-                    input.pb.finish();
+                    let mut w = ProgressWrapper::new(out, file.filesize);
+                    io::copy(&mut res, &mut w)?;
+                    w.finish();
                     // if with_deps {
                     //     let deps_list = rt.block_on(modio_.mod_(game_id, m.id).dependencies().list());
                     //     if let Ok(deps) = deps_list {
