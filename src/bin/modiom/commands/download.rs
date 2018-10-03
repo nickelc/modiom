@@ -1,8 +1,6 @@
 use std::fs::File;
-use std::io;
 use std::path::PathBuf;
 
-use reqwest;
 use tokio::runtime::Runtime;
 
 use command_prelude::*;
@@ -65,11 +63,10 @@ pub fn exec(config: &Config, args: &ArgMatches) -> CliResult {
                         file.download.binary_url,
                         dest.join(file.filename.clone()).display()
                     );
-                    let mut res = reqwest::get(file.download.binary_url)?;
 
-                    let mut out = File::create(dest.join(file.filename))?;
+                    let mut out = File::create(dest.join(&file.filename))?;
                     let mut w = ProgressWrapper::new(out, file.filesize);
-                    io::copy(&mut res, &mut w)?;
+                    let (_n, mut w) = rt.block_on(modio_.download(file, w))?;
                     w.finish();
                     // if with_deps {
                     //     let deps_list = rt.block_on(modio_.mod_(game_id, m.id).dependencies().list());

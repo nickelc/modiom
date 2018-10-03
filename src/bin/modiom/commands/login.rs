@@ -2,7 +2,7 @@ use std::io::{self, BufRead, Write};
 
 use clap::Arg;
 use modio::auth::Credentials;
-use modio::{Error, Modio, ModioMessage};
+use modio::{Modio, ModioMessage};
 use tokio::runtime::Runtime;
 
 use command_prelude::*;
@@ -38,8 +38,7 @@ pub fn exec(config: &Config, args: &ArgMatches) -> CliResult {
                 let code = prompt("Enter security code: ")?;
                 match rt.block_on(m.auth().security_code(&code)) {
                     Ok(token) => break token,
-                    Err(Error::Fault { error, .. }) => println!("{}", error.message),
-                    Err(err) => println!("{:?}", err),
+                    Err(err) => println!("{}", err),
                 };
             }
         }

@@ -5,7 +5,6 @@ extern crate modiom;
 #[macro_use]
 extern crate nom;
 extern crate pbr;
-extern crate reqwest;
 extern crate tokio;
 extern crate toml;
 

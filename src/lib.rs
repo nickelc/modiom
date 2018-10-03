@@ -3,7 +3,6 @@ extern crate config as cfg;
 extern crate dirs;
 extern crate lazycell;
 extern crate modio;
-extern crate reqwest;
 extern crate serde;
 #[macro_use]
 extern crate serde_derive;

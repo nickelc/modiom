@@ -3,7 +3,6 @@ use std::io;
 use cfg;
 use clap;
 use modio::Error as ModioError;
-use reqwest;
 
 pub type ModiomResult<T> = Result<T, Error>;
 pub type CliResult = Result<(), Error>;
@@ -14,7 +13,6 @@ pub enum Error {
     Config(cfg::ConfigError),
     Io(io::Error),
     Modio(ModioError),
-    Reqwest(reqwest::Error),
     Message(String),
 }
 
@@ -38,27 +36,7 @@ impl From<io::Error> for Error {
 
 impl From<ModioError> for Error {
     fn from(err: ModioError) -> Error {
-        match err {
-            ModioError::Msg(msg) => Error::Message(msg),
-            ModioError::Fault { error, .. } => {
-                let mut msg = String::new();
-                msg.push_str(&error.message);
-                if let Some(errors) = error.errors {
-                    msg.push('\n');
-                    for (key, val) in errors {
-                        msg.push_str(&format!("{}: {}", key, val));
-                    }
-                }
-                Error::Message(msg)
-            }
-            e => Error::Modio(e),
-        }
-    }
-}
-
-impl From<reqwest::Error> for Error {
-    fn from(err: reqwest::Error) -> Error {
-        Error::Reqwest(err)
+        Error::Modio(err)
     }
 }
 
