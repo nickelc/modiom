@@ -1,3 +1,4 @@
+use prettytable::{format, Table};
 use tokio::runtime::Runtime;
 
 use command_prelude::*;
@@ -49,43 +50,77 @@ pub fn exec(config: &Config, args: &ArgMatches) -> CliResult {
     }
     let game_id = value_t!(args, "game-id", u32);
 
+    let mut filter = Table::new();
+    filter.set_format(*format::consts::FORMAT_CLEAN);
+    filter.set_titles(row![b -> "Filter"]);
+
     if let Ok(Some(token)) = config.auth_token() {
         let mut rt = Runtime::new()?;
-        let m = Modio::host(
-            config.host(),
-            "modiom",
-            Credentials::Token(token),
-        );
+        let m = Modio::host(config.host(), "modiom", Credentials::Token(token));
 
         if let Ok(game_id) = game_id {
             let mut opts = ModsListOptions::new();
             for e in exprs {
+                filter.add_row(row![e]);
                 opts.add_filter(e.property, e.op.into(), e.right.to_value());
             }
             if let Some(ft) = args.value_of("ft") {
+                filter.add_row(row![format!("fulltext = {:?}", ft)]);
                 opts.fulltext(ft);
             }
-            println!("{:#?}", opts);
+            if !filter.is_empty() {
+                filter.printstd();
+                println!();
+            }
+
             let list = rt.block_on(m.game(game_id).mods().list(&opts));
             if let Ok(list) = list {
+                let mut output = Table::new();
+                output.set_format(*format::consts::FORMAT_CLEAN);
+                output.add_row(row!(
+                    b -> "Id",
+                    b -> "Name-Id",
+                    b -> "Name",
+                ));
                 for m in list {
-                    println!("{:?}\tid={}", m.name, m.id);
+                    output.add_row(row![m.id, m.name_id, m.name]);
                 }
+                if output.is_empty() {
+                    output.add_row(row![H3 -> "No results"]);
+                }
+                output.printstd();
             }
         } else {
             let mut opts = GamesListOptions::new();
             for e in exprs {
+                filter.add_row(row![e]);
                 opts.add_filter(e.property, e.op.into(), e.right.to_value());
             }
             if let Some(ft) = args.value_of("ft") {
+                filter.add_row(row![format!("fulltext = {:?}", ft)]);
                 opts.fulltext(ft);
             }
-            println!("{:#?}", opts);
+            if !filter.is_empty() {
+                filter.printstd();
+                println!();
+            }
+
             let list = rt.block_on(m.games().list(&opts));
             if let Ok(list) = list {
+                let mut output = Table::new();
+                output.set_format(*format::consts::FORMAT_CLEAN);
+                output.set_titles(row![
+                    b -> "Id",
+                    b -> "Name-Id",
+                    b -> "Name",
+                ]);
                 for g in list {
-                    println!("{:?}\tid={}", g.name, g.id);
+                    output.add_row(row![g.id, g.name_id, g.name]);
                 }
+                if output.is_empty() {
+                    output.add_row(row![H3 -> "No results"]);
+                }
+                output.printstd();
             }
         }
     }

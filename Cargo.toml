@@ -27,3 +27,7 @@ version = "0.3"
 version = "0.9"
 default-features = false
 features = ["toml"]
+
+[dependencies.prettytable-rs]
+version = "0.8"
+default-features = false

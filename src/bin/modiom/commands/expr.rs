@@ -1,3 +1,5 @@
+use std::fmt;
+
 use modio::filter::{OneOrMany, Operator as FilterOp};
 
 pub use self::parser::{parse, parse_for};
@@ -29,6 +31,24 @@ pub enum Operator {
     BitwiseAnd,
 }
 
+impl fmt::Display for Operator {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match *self {
+            Operator::Equals => write!(f, "="),
+            Operator::NotEquals => write!(f, "!="),
+            Operator::Like => write!(f, "like"),
+            Operator::NotLike => write!(f, "not like"),
+            Operator::In => write!(f, "in"),
+            Operator::NotIn => write!(f, "not in"),
+            Operator::Min => write!(f, ">="),
+            Operator::Max => write!(f, "<="),
+            Operator::GreaterThan => write!(f, ">"),
+            Operator::SmallerThan => write!(f, "<"),
+            Operator::BitwiseAnd => write!(f, "&"),
+        }
+    }
+}
+
 impl From<Operator> for FilterOp {
     fn from(op: Operator) -> FilterOp {
         match op {
@@ -54,6 +74,12 @@ pub struct Expr {
     pub right: Condition,
 }
 
+impl fmt::Display for Expr {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{} {} {}", self.property, self.op, self.right)
+    }
+}
+
 impl Condition {
     pub fn to_value(self) -> OneOrMany<String> {
         match self {
@@ -67,6 +93,29 @@ impl Condition {
                         Literal::String(s) => s,
                     }).collect::<Vec<String>>();
                 OneOrMany::Many(val)
+            }
+        }
+    }
+}
+
+impl fmt::Display for Condition {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            Condition::Literal(Literal::Integer(i)) => fmt::Display::fmt(i, f),
+            Condition::Literal(Literal::String(s)) => fmt::Debug::fmt(s, f),
+            Condition::LiteralList(list) => {
+                write!(f, "(");
+                let mut it = list.into_iter().peekable();
+                while let Some(e) = it.next() {
+                    match e {
+                        Literal::Integer(i) => fmt::Display::fmt(i, f),
+                        Literal::String(s) => fmt::Debug::fmt(s, f),
+                    }?;
+                    if it.peek().is_some() {
+                        write!(f, ", ");
+                    }
+                }
+                write!(f, ")")
             }
         }
     }
