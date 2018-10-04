@@ -3,6 +3,7 @@ name = "modiom"
 version = "0.1.0"
 description = "command line tool for mod.io"
 readme = "README.md"
+license = "MIT/Apache-2.0"
 authors = ["Constantin Nickel <constantin.nickel@gmail.com>"]
 
 [[bin]]
