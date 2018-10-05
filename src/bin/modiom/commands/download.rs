@@ -1,3 +1,4 @@
+use std::collections::HashSet;
 use std::fs::File;
 use std::path::PathBuf;
 
@@ -42,42 +43,31 @@ pub fn exec(config: &Config, args: &ArgMatches) -> CliResult {
 
     if let Ok(Some(token)) = config.auth_token() {
         let mut rt = Runtime::new()?;
-        let modio_ = Modio::host(
-            config.host(),
-            "modiom",
-            Credentials::Token(token),
-        );
+        let modio_ = Modio::host(config.host(), "modiom", Credentials::Token(token));
+
+        let mut missing_mods: HashSet<u32> = HashSet::new();
+        missing_mods.extend(&mod_ids);
+
         let mut opts = ModsListOptions::new();
         opts.id(Operator::In, mod_ids);
 
-        println!("{:#?}", opts);
-
         let list = rt.block_on(modio_.game(game_id).mods().list(&opts));
 
-        // println!("{:#?}", list);
         if let Ok(mods) = list {
             for m in mods {
                 if let Some(file) = m.modfile {
-                    println!(
-                        "dl: {} to {}",
-                        file.download.binary_url,
-                        dest.join(file.filename.clone()).display()
-                    );
+                    println!("Downloading: {}", file.download.binary_url);
 
                     let mut out = File::create(dest.join(&file.filename))?;
                     let mut w = ProgressWrapper::new(out, file.filesize);
                     let (_n, mut w) = rt.block_on(modio_.download(file, w))?;
                     w.finish();
-                    // if with_deps {
-                    //     let deps_list = rt.block_on(modio_.mod_(game_id, m.id).dependencies().list());
-                    //     if let Ok(deps) = deps_list {
-                    //         for d in deps {
-                    //             rt.
-                    //         }
-                    //     }
-                    // }
                 }
+                missing_mods.remove(&m.id);
             }
+        }
+        for mm in missing_mods {
+            println!("Mod.id: {} does not exist or has no primary file. ", mm);
         }
     }
 
