@@ -7,6 +7,7 @@ extern crate nom;
 extern crate pbr;
 #[macro_use]
 extern crate prettytable;
+extern crate textwrap;
 extern crate tokio;
 extern crate toml;
 

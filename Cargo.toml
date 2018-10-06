@@ -21,6 +21,7 @@ nom = "4"
 pbr = "1"
 serde = "1"
 serde_derive = "1"
+textwrap = "0.10"
 tokio = "0.1"
 toml = "0.4"
 
