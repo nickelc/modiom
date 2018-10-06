@@ -12,9 +12,15 @@ use modiom::config::Config;
 
 pub fn cli() -> App {
     subcommand("search")
-        .arg(opt("game-id", "").value_name("ID").validator(validate_u32))
+        .about("Search game or mods.")
         .arg(
-            opt("id", "")
+            opt(
+                "game-id",
+                "When specified, modiom will search for mods of the game.",
+            ).value_name("ID")
+            .validator(validate_u32),
+        ).arg(
+            opt("id", "Specify the id of the game or mod.")
                 .multiple(true)
                 .number_of_values(1)
                 .value_name("ID"),

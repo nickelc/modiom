@@ -15,21 +15,23 @@ use progress::ProgressWrapper;
 
 pub fn cli() -> App {
     subcommand("download")
+        .about("Download mod files")
         .arg(
-            opt("game-id", "")
+            opt("game-id", "Specify a game id")
                 .value_name("ID")
                 .number_of_values(1)
                 .required(true)
                 .validator(validate_u32),
         ).arg(
-            opt("mod-id", "")
+            opt("mod-id", "Specify a mod id")
                 .value_name("ID")
                 .multiple(true)
                 .number_of_values(1)
                 .required(true)
                 .validator(validate_u32),
-        ).arg(opt("with-dependencies", ""))
-        .arg(Arg::with_name("dest").value_name("DEST"))
+        )
+        //.arg(opt("with-dependencies", ""))
+        .arg(Arg::with_name("dest").help("Save files to DEST").value_name("DEST"))
 }
 
 pub fn exec(config: &Config, args: &ArgMatches) -> CliResult {

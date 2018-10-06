@@ -27,7 +27,7 @@ fn main() -> CliResult {
             AppSettings::SubcommandRequiredElseHelp,
             AppSettings::VersionlessSubcommands,
         ]).subcommands(commands::builtin())
-        .arg(opt("test-env", "use the test environment").global(true))
+        .arg(opt("test-env", "Use the mod.io test environment").global(true))
         .get_matches_safe()
         .unwrap_or_else(|e| e.exit());
 
