@@ -1,5 +1,6 @@
 use prettytable::format;
 use textwrap::fill;
+use tokio::prelude::*;
 use tokio::runtime::Runtime;
 
 use command_prelude::*;
@@ -32,14 +33,17 @@ pub fn exec(config: &Config, args: &ArgMatches) -> CliResult {
         let mut rt = Runtime::new()?;
         let modio = Modio::host(config.host(), "modiom", Credentials::Token(token));
 
-        match rt.block_on(modio.mod_(game_id, mod_id).get()) {
-            Ok(m) => {
+        let modref = modio.mod_(game_id, mod_id);
+        match rt.block_on(modref.get().join(modref.dependencies().list())) {
+            Ok((m, deps)) => {
                 let tags = m
                     .tags
                     .iter()
-                    .map(|t| t.name.clone())
+                    .map(|t| format!("{:?}", t.name))
                     .collect::<Vec<_>>()
                     .join(", ");
+                let deps = deps.into_iter().map(|d| d.mod_id).collect::<Vec<_>>();
+
                 let mut mt = table!(
                     [b -> "Id", m.id],
                     [b -> "Name-Id", m.name_id],
@@ -47,7 +51,8 @@ pub fn exec(config: &Config, args: &ArgMatches) -> CliResult {
                     [b -> "Summary", fill(&m.summary, 60)],
                     [b -> "Profile", m.profile_url],
                     [b -> "Homepage", m.homepage_url.map(|u| u.to_string()).unwrap_or_else(String::new)],
-                    [b -> "Tags", tags]
+                    [b -> "Tags", format!("[{}]", tags)],
+                    [b -> "Dependencies", format!("{:?}", deps)]
                 );
                 mt.set_format(*format::consts::FORMAT_CLEAN);
                 if let Some(file) = m.modfile {
