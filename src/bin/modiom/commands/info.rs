@@ -1,28 +1,34 @@
+use futures::{future, Future};
 use prettytable::format;
 use textwrap::fill;
-use tokio::prelude::*;
 use tokio::runtime::Runtime;
+
+use modio::auth::Credentials;
+use modio::files::File;
+use modio::{Error as ModioError, Modio, ModioListResponse};
+use modiom::config::Config;
 
 use command_prelude::*;
 
-use modio::auth::Credentials;
-use modio::Modio;
-use modiom::config::Config;
+type FileList = ModioListResponse<File>;
+type FilesFuture = Box<Future<Item = Option<FileList>, Error = ModioError> + Send>;
 
 pub fn cli() -> App {
     subcommand("info")
         .about("Show information of mods")
         .arg(
             Arg::with_name("game")
+                .help("Unique id of a game.")
                 .value_name("GAME")
                 .required(true)
                 .validator(validate_u32),
         ).arg(
             Arg::with_name("mod")
+                .help("Unique id of a mod.")
                 .value_name("MOD")
                 .required(true)
                 .validator(validate_u32),
-        )
+        ).arg(opt("files", "List all files."))
 }
 
 pub fn exec(config: &Config, args: &ArgMatches) -> CliResult {
@@ -34,8 +40,19 @@ pub fn exec(config: &Config, args: &ArgMatches) -> CliResult {
         let modio = Modio::host(config.host(), "modiom", Credentials::Token(token));
 
         let modref = modio.mod_(game_id, mod_id);
-        match rt.block_on(modref.get().join(modref.dependencies().list())) {
-            Ok((m, deps)) => {
+
+        let files: FilesFuture = if args.is_present("files") {
+            Box::new(modref.files().list(&Default::default()).map(|l| Some(l)))
+        } else {
+            Box::new(future::ok::<Option<FileList>, ModioError>(None))
+        };
+
+        let mod_ = modref.get();
+        let deps = modref.dependencies().list();
+        let task = mod_.join(deps).join(files);
+
+        match rt.block_on(task) {
+            Ok(((m, deps), files)) => {
                 let tags = m
                     .tags
                     .iter()
@@ -54,8 +71,10 @@ pub fn exec(config: &Config, args: &ArgMatches) -> CliResult {
                     [b -> "Tags", format!("[{}]", tags)],
                     [b -> "Dependencies", format!("{:?}", deps)]
                 );
+                let mut primary = 0;
                 mt.set_format(*format::consts::FORMAT_CLEAN);
                 if let Some(file) = m.modfile {
+                    primary = file.id;
                     mt.add_empty_row();
                     mt.add_row(row![bH2 -> "File"]);
                     mt.add_row(row![b -> "Id", file.id]);
@@ -66,6 +85,25 @@ pub fn exec(config: &Config, args: &ArgMatches) -> CliResult {
                     mt.add_row(row![b -> "MD5", file.filehash.md5]);
                 }
                 mt.printstd();
+
+                if let Some(files) = files {
+                    let mut ft = table!(
+                        [],
+                        [bH4 -> "Files"],
+                        [b -> "Id", b -> "Filename", b -> "Version", b -> "Download"]
+                    );
+                    ft.set_format(*format::consts::FORMAT_CLEAN);
+                    for file in files {
+                        let suffix = if primary == file.id { "*" } else { "" };
+                        ft.add_row(row![
+                            format!("{}{}", file.id, suffix),
+                            file.filename,
+                            file.version.unwrap_or_else(String::new),
+                            file.download.binary_url
+                        ]);
+                    }
+                    ft.printstd();
+                }
             }
             Err(e) => println!("{}", e),
         };

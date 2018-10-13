@@ -21,6 +21,7 @@ modiom 0.1.0
 ## Installation
 
 ### Cargo
+
 ```
 $ git clone https://github.com/nickelc/modiom.git
 $ cargo install --path modiom
@@ -29,6 +30,7 @@ $ cargo install --path modiom
 ## Usage
 
 ### modiom login
+
 ```
 $ modiom login --help
 modiom-login
@@ -45,6 +47,7 @@ ARGS:
 ```
 
 ### modiom search
+
 ```
 $ modiom search --help
 modiom-search
@@ -65,7 +68,28 @@ ARGS:
     <FULLTEXT>
 ```
 
+### modiom info
+
+```
+$ modiom info --help
+modiom-info
+Show information of mods
+
+USAGE:
+    modiom info [OPTIONS] <GAME> <MOD>
+
+OPTIONS:
+        --files       List all files.
+        --test-env    Use the mod.io test environment
+    -h, --help        Prints help information
+
+ARGS:
+    <GAME>    Unique id of a game.
+    <MOD>     Unique id of a mod.
+```
+
 ### modiom download
+
 ```
 $ modiom download --help
 modiom-download
