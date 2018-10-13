@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use clap::{self, SubCommand};
 
 pub use clap::{AppSettings, Arg, ArgGroup, ArgMatches};
@@ -15,6 +17,29 @@ pub fn subcommand(name: &'static str) -> App {
         AppSettings::DeriveDisplayOrder,
         AppSettings::DontCollapseArgsInUsage,
     ])
+}
+
+#[allow(dead_code)]
+pub fn validate_is_file(value: String) -> Result<(), String> {
+    if !PathBuf::from(value).is_file() {
+        return Err(String::from("Path is not a file."));
+    }
+    Ok(())
+}
+
+#[allow(dead_code)]
+pub fn validate_path_exists(value: String) -> Result<(), String> {
+    if !PathBuf::from(value).exists() {
+        return Err(String::from("Path does not exist."));
+    }
+    Ok(())
+}
+
+pub fn validate_is_zip(value: String) -> Result<(), String> {
+    if !PathBuf::from(&value).is_file() && value.ends_with(".zip") {
+        return Err(String::from("File is not a zip."));
+    }
+    Ok(())
 }
 
 pub fn validate_u32(value: String) -> Result<(), String> {

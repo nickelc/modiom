@@ -2,13 +2,14 @@ use std::io;
 use std::io::prelude::*;
 
 use pbr::{ProgressBar, Units};
+use tokio::prelude::*;
 
 pub struct ProgressWrapper<T, W>
 where
     W: Write,
 {
     inner: T,
-    progress: ProgressBar<W>,
+    pub progress: ProgressBar<W>,
 }
 
 impl<T> ProgressWrapper<T, io::Stdout> {
@@ -21,8 +22,20 @@ impl<T> ProgressWrapper<T, io::Stdout> {
 }
 
 impl<T, W: Write> ProgressWrapper<T, W> {
+    pub fn inner(&self) -> &T {
+        &self.inner
+    }
+
     pub fn finish(&mut self) {
         self.progress.finish();
+    }
+}
+
+impl<T: Read, W: Write> AsyncRead for ProgressWrapper<T, W> {}
+
+impl<T: AsyncWrite, W: Write> AsyncWrite for ProgressWrapper<T, W> {
+    fn shutdown(&mut self) -> Poll<(), io::Error> {
+        self.inner.shutdown()
     }
 }
 

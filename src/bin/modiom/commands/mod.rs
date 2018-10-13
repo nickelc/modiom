@@ -2,7 +2,13 @@ use command_prelude::*;
 use modiom::config::Config;
 
 pub fn builtin() -> Vec<App> {
-    vec![login::cli(), info::cli(), search::cli(), download::cli()]
+    vec![
+        login::cli(),
+        info::cli(),
+        search::cli(),
+        download::cli(),
+        upload::cli(),
+    ]
 }
 
 pub fn exec(cfg: &Config, args: &ArgMatches) -> CliResult {
@@ -11,6 +17,7 @@ pub fn exec(cfg: &Config, args: &ArgMatches) -> CliResult {
         ("info", Some(matches)) => info::exec(cfg, matches),
         ("search", Some(matches)) => search::exec(cfg, matches),
         ("download", Some(matches)) => download::exec(cfg, matches),
+        ("upload", Some(matches)) => upload::exec(cfg, matches),
         _ => unreachable!(),
     }
 }
@@ -20,3 +27,4 @@ mod expr;
 mod info;
 mod login;
 mod search;
+mod upload;

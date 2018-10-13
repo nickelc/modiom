@@ -17,6 +17,7 @@ clap = "2"
 dirs = "1"
 futures = "0.1"
 lazycell = "1"
+md-5 = { version ="0.8", features = ["asm"] }
 nom = "4"
 pbr = "1"
 serde = "1"
@@ -27,6 +28,7 @@ toml = "0.4"
 
 [dependencies.modio]
 version = "0.3"
+git = "https://github.com/nickelc/modio-rs.git"
 
 [dependencies.config]
 version = "0.9"

@@ -1,5 +1,7 @@
 #[macro_use]
 extern crate clap;
+extern crate futures;
+extern crate md5;
 extern crate modio;
 extern crate modiom;
 #[macro_use]
@@ -17,6 +19,7 @@ use modiom::errors::CliResult;
 mod command_prelude;
 mod commands;
 mod progress;
+mod utils;
 
 use command_prelude::*;
 

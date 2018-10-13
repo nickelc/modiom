@@ -45,3 +45,9 @@ impl From<String> for Error {
         Error::Message(err)
     }
 }
+
+impl<'a> From<&'a str> for Error {
+    fn from(err: &'a str) -> Error {
+        Error::Message(err.into())
+    }
+}

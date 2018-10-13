@@ -83,3 +83,29 @@ OPTIONS:
 ARGS:
     <DEST>
 ```
+
+### modiom upload
+
+```
+$ modiom upload --help
+modiom-upload
+Upload new files
+
+USAGE:
+    modiom upload [OPTIONS] <GAME> <MOD> <FILE>
+
+OPTIONS:
+        --filename <NAME>          Overwrite the filename.
+        --version <VERSION>        Version of this file release.
+        --changelog <CHANGELOG>    Changelog of this release.
+        --not-active               When this flag is enabled, the upload will not be labeled as current release.
+        --metadata-blob <BLOB>
+        --checksum                 Calculate the checksum before uploading.
+        --test-env                 Use the mod.io test environment
+    -h, --help                     Prints help information
+
+ARGS:
+    <GAME>    Unique id of the game.
+    <MOD>     Unique id of the mod.
+    <FILE>    Zip file to upload.
+```
