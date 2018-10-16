@@ -1,6 +1,13 @@
 <a href="https://mod.io"><img src="https://static.mod.io/v1/images/branding/modio-color-dark.svg" alt="mod.io" width="400"/></a>
 
 # modiom
+[![Linux build Status][travis-badge]][travis-url]
+[![Window build status][appveyor-badge]][appveyor-url]
+
+[appveyor-badge]: https://ci.appveyor.com/api/projects/status/github/nickelc/modiom?svg=true
+[appveyor-url]: https://ci.appveyor.com/project/nickelc/modiom
+[travis-badge]: https://travis-ci.org/nickelc/modiom.svg?branch=master
+[travis-url]: https://travis-ci.org/nickelc/modiom
 
 modiom is a command line tool for [mod.io](https://mod.io) to search, download and update mods for games without builtin support.
 
