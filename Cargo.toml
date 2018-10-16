@@ -17,7 +17,7 @@ clap = "2"
 dirs = "1"
 futures = "0.1"
 lazycell = "1"
-md-5 = { version ="0.8", features = ["asm"] }
+md-5 = "0.8"
 nom = "4"
 pbr = "1"
 serde = "1"
