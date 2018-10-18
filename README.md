@@ -87,6 +87,7 @@ USAGE:
 
 OPTIONS:
         --files       List all files.
+        --stats       Show the statistics.
         --test-env    Use the mod.io test environment
     -h, --help        Prints help information
 

@@ -5,6 +5,7 @@ use tokio::runtime::Runtime;
 
 use modio::auth::Credentials;
 use modio::files::File;
+use modio::mods::Statistics;
 use modio::{Error as ModioError, Modio, ModioListResponse};
 use modiom::config::Config;
 
@@ -12,6 +13,7 @@ use command_prelude::*;
 
 type FileList = ModioListResponse<File>;
 type FilesFuture = Box<Future<Item = Option<FileList>, Error = ModioError> + Send>;
+type StatsFuture = Box<Future<Item = Option<Statistics>, Error = ModioError> + Send>;
 
 pub fn cli() -> App {
     subcommand("info")
@@ -29,6 +31,7 @@ pub fn cli() -> App {
                 .required(true)
                 .validator(validate_u32),
         ).arg(opt("files", "List all files."))
+        .arg(opt("stats", "Show the statistics."))
 }
 
 pub fn exec(config: &Config, args: &ArgMatches) -> CliResult {
@@ -47,12 +50,18 @@ pub fn exec(config: &Config, args: &ArgMatches) -> CliResult {
             Box::new(future::ok::<Option<FileList>, ModioError>(None))
         };
 
+        let stats: StatsFuture = if args.is_present("stats") {
+            Box::new(modref.statistics().map(|s| Some(s)))
+        } else {
+            Box::new(future::ok::<Option<Statistics>, ModioError>(None))
+        };
+
         let mod_ = modref.get();
         let deps = modref.dependencies().list();
-        let task = mod_.join(deps).join(files);
+        let task = mod_.join(deps).join(stats.join(files));
 
         match rt.block_on(task) {
-            Ok(((m, deps), files)) => {
+            Ok(((m, deps), (stats, files))) => {
                 let tags = m
                     .tags
                     .iter()
@@ -83,6 +92,30 @@ pub fn exec(config: &Config, args: &ArgMatches) -> CliResult {
                     mt.add_row(row![b -> "Download", file.download.binary_url]);
                     mt.add_row(row![b -> "Size", file.filesize]);
                     mt.add_row(row![b -> "MD5", file.filehash.md5]);
+                }
+                if let Some(stats) = stats {
+                    mt.add_empty_row();
+                    mt.add_row(row![bH2 -> "Statistics"]);
+                    mt.add_row(row![b -> "Downloads", stats.downloads_total]);
+                    mt.add_row(row![b -> "Subscribers", stats.subscribers_total]);
+                    mt.add_row(row![
+                        b -> "Rank",
+                        format!(
+                            "{}/{}",
+                            stats.popularity.rank_position,
+                            stats.popularity.rank_total,
+                        )
+                    ]);
+                    mt.add_row(row![
+                        b -> "Ratings",
+                        format!(
+                            "{} / total: {} positive: {} negative: {}",
+                            stats.ratings.display_text,
+                            stats.ratings.total,
+                            stats.ratings.positive,
+                            stats.ratings.negative,
+                        )
+                    ]);
                 }
                 mt.printstd();
 
