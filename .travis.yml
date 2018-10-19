@@ -35,6 +35,7 @@ deploy:
     skip_cleanup: true
     file_glob: true
     file: deployment/${PROJECT_NAME}-${TRAVIS_TAG}-${TARGET}.tar.gz
+    body: "Automatically deployed release"
     on:
       condition: $DEPLOY_RELEASE = 1
       tags: true
