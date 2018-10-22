@@ -31,7 +31,11 @@ pub fn cli() -> App {
                 .validator(validate_u32),
         )
         //.arg(opt("with-dependencies", ""))
-        .arg(Arg::with_name("dest").help("Save files to DEST").value_name("DEST"))
+        .arg(
+            Arg::with_name("dest")
+                .help("Save files to DEST")
+                .value_name("DEST"),
+        )
 }
 
 pub fn exec(config: &Config, args: &ArgMatches) -> CliResult {

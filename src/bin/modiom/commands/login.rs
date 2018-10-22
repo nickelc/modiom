@@ -10,8 +10,7 @@ use modiom::config::Config;
 use modiom::errors::ModiomResult;
 
 pub fn cli() -> App {
-    subcommand("login")
-        .arg(Arg::with_name("token"))
+    subcommand("login").arg(Arg::with_name("token"))
 }
 
 pub fn exec(config: &Config, args: &ArgMatches) -> CliResult {

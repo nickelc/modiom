@@ -40,10 +40,8 @@ pub fn cli() -> App {
             "not-active",
             "When this flag is enabled, the uploaded file will not be labeled as current release.",
         )).arg(opt("metadata-blob", "").value_name("BLOB"))
-        .arg(opt(
-            "checksum",
-            "Calculate the checksum before uploading.",
-        )).arg(
+        .arg(opt("checksum", "Calculate the checksum before uploading."))
+        .arg(
             Arg::with_name("src")
                 .help("Zip file to upload.")
                 .value_name("FILE")
