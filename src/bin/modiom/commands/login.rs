@@ -44,6 +44,12 @@ pub fn exec(config: &Config, args: &ArgMatches) -> CliResult {
         }
     };
 
+    if let Ok(Some(old_token)) = config.auth_token() {
+        if token == old_token {
+            return Ok(());
+        }
+    }
+
     config.save_credentials(token)?;
     Ok(())
 }

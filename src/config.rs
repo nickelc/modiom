@@ -1,4 +1,3 @@
-use std::collections::BTreeMap;
 use std::env;
 use std::fs;
 use std::io::prelude::*;
@@ -7,11 +6,13 @@ use std::path::{Path, PathBuf};
 
 use dirs::home_dir;
 use lazycell::LazyCell;
+use toml::value::Table;
+use toml::Value;
 
 use cfg::{Config as Cfg, ConfigError};
 use cfg::{Environment, File, FileFormat};
 
-use errors::ModiomResult;
+use errors::{Error, ModiomResult};
 
 #[derive(Debug)]
 pub struct Config {
@@ -87,35 +88,47 @@ impl Config {
     }
 
     pub fn save_credentials(&self, token: String) -> ModiomResult<()> {
-        if let Ok(Some(old_token)) = self.auth_token() {
-            if token == old_token {
-                return Ok(());
-            }
-        }
-
-        let mut table: ::toml::value::Table = BTreeMap::new();
-        table.insert("token".into(), token.into());
-
-        let table = if self.test_env {
-            let mut env_table: ::toml::value::Table = BTreeMap::new();
-            env_table.insert("test".into(), table.into());
-            env_table
-        } else {
-            table
-        };
-
-        let mut toml: ::toml::value::Table = BTreeMap::new();
-        toml.insert("auth".into(), table.into());
-        let content = ::toml::Value::Table(toml).to_string();
-
         fs::create_dir_all(&self.home_dir)?;
         let mut file = fs::OpenOptions::new()
+            .read(true)
             .write(true)
             .create(true)
             .open(self.home_dir.join("credentials"))?;
+
+        let mut contents = String::new();
+        file.read_to_string(&mut contents)?;
+
+        let mut toml: Value = contents
+            .parse()
+            .map_err(|e| Error::from(format!("Failed to load credentials: {}", e)))?;
+
+        let (key, value) = if self.test_env {
+            let mut table = Table::new();
+            table.insert("token".into(), token.into());
+            ("test".into(), table.into())
+        } else {
+            ("token".into(), token.into())
+        };
+
+        if let Some(table) = toml.as_table_mut() {
+            let auth = table
+                .entry("auth".into())
+                .or_insert_with(|| Table::new().into());
+
+            // Make sure an existing value is a table
+            if !auth.is_table() {
+                *auth = Table::new().into();
+            }
+            if let Some(table) = auth.as_table_mut() {
+                table.insert(key, value);
+            }
+        }
+
+        let contents = toml.to_string();
         file.seek(SeekFrom::Start(0))?;
-        file.write_all(content.as_bytes())?;
-        file.set_len(content.len() as u64)?;
+        file.write_all(contents.as_bytes())?;
+        file.set_len(contents.len() as u64)?;
+
         Ok(())
     }
 }
