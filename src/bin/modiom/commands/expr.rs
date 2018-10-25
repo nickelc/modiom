@@ -81,7 +81,7 @@ impl fmt::Display for Expr {
 }
 
 impl Condition {
-    pub fn to_value(self) -> OneOrMany<String> {
+    pub fn into_value(self) -> OneOrMany<String> {
         match self {
             Condition::Literal(Literal::Integer(i)) => OneOrMany::One(i.to_string()),
             Condition::Literal(Literal::String(s)) => OneOrMany::One(s),

@@ -68,7 +68,7 @@ pub fn exec(config: &Config, args: &ArgMatches) -> CliResult {
             let mut opts = ModsListOptions::new();
             for e in exprs {
                 filter.add_row(row![e]);
-                opts.add_filter(e.property, e.op.into(), e.right.to_value());
+                opts.add_filter(e.property, e.op.into(), e.right.into_value());
             }
             if let Some(ft) = args.value_of("ft") {
                 filter.add_row(row![format!("fulltext = {:?}", ft)]);
@@ -100,7 +100,7 @@ pub fn exec(config: &Config, args: &ArgMatches) -> CliResult {
             let mut opts = GamesListOptions::new();
             for e in exprs {
                 filter.add_row(row![e]);
-                opts.add_filter(e.property, e.op.into(), e.right.to_value());
+                opts.add_filter(e.property, e.op.into(), e.right.into_value());
             }
             if let Some(ft) = args.value_of("ft") {
                 filter.add_row(row![format!("fulltext = {:?}", ft)]);
