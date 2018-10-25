@@ -20,6 +20,7 @@ pub fn subcommand(name: &'static str) -> App {
 }
 
 #[allow(dead_code)]
+#[cfg_attr(feature = "cargo-clippy", allow(needless_pass_by_value))]
 pub fn validate_is_file(value: String) -> Result<(), String> {
     if !PathBuf::from(value).is_file() {
         return Err(String::from("Path is not a file."));
@@ -28,6 +29,7 @@ pub fn validate_is_file(value: String) -> Result<(), String> {
 }
 
 #[allow(dead_code)]
+#[cfg_attr(feature = "cargo-clippy", allow(needless_pass_by_value))]
 pub fn validate_path_exists(value: String) -> Result<(), String> {
     if !PathBuf::from(value).exists() {
         return Err(String::from("Path does not exist."));
@@ -35,6 +37,7 @@ pub fn validate_path_exists(value: String) -> Result<(), String> {
     Ok(())
 }
 
+#[cfg_attr(feature = "cargo-clippy", allow(needless_pass_by_value))]
 pub fn validate_is_zip(value: String) -> Result<(), String> {
     if !PathBuf::from(&value).is_file() && value.ends_with(".zip") {
         return Err(String::from("File is not a zip."));
@@ -42,6 +45,7 @@ pub fn validate_is_zip(value: String) -> Result<(), String> {
     Ok(())
 }
 
+#[cfg_attr(feature = "cargo-clippy", allow(needless_pass_by_value))]
 pub fn validate_u32(value: String) -> Result<(), String> {
     match value.parse::<u32>() {
         Ok(_) => Ok(()),
