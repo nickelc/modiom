@@ -34,7 +34,8 @@ impl Config {
 
     pub fn default() -> ModiomResult<Config> {
         let cwd = env::current_dir()?;
-        let homedir = home_dir().ok_or(format_err!("Couldn't find your home directory."))?;
+        let homedir =
+            home_dir().ok_or_else(|| format_err!("Couldn't find your home directory."))?;
         Ok(Config::new(cwd, homedir.join(".modio")))
     }
 

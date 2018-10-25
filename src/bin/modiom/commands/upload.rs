@@ -70,7 +70,7 @@ pub fn exec(config: &Config, args: &ArgMatches) -> CliResult {
             src.file_name()
                 .and_then(|n| n.to_str())
                 .map(|n| n.to_string())
-                .ok_or::<Error>("Failed to get the filename".into())?
+                .ok_or_else::<Error, _>(|| "Failed to get the filename".into())?
         };
 
         let checksum: ChecksumFuture = if args.is_present("checksum") {
