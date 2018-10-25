@@ -317,7 +317,7 @@ mod parser {
                     }
                     NomError::Incomplete(_) => String::from("failed to parse expression"),
                 };
-                return Err(msg);
+                Err(msg)
             }
         }
     }
