@@ -327,7 +327,7 @@ mod parser {
             Ok((_, (Some(op), right))) => (op, right),
             Ok((_, (None, right))) => {
                 let op = match right {
-                    Condition::Literal(Literal::String(ref s)) if s.contains("*") => Operator::Like,
+                    Condition::Literal(Literal::String(ref s)) if s.contains('*') => Operator::Like,
                     Condition::LiteralList(_) => Operator::In,
                     _ => Operator::Equals,
                 };
