@@ -45,13 +45,13 @@ pub fn exec(config: &Config, args: &ArgMatches) -> CliResult {
         let modref = modio.mod_(game_id, mod_id);
 
         let files: FilesFuture = if args.is_present("files") {
-            Box::new(modref.files().list(&Default::default()).map(|l| Some(l)))
+            Box::new(modref.files().list(&Default::default()).map(Some))
         } else {
             Box::new(future::ok::<Option<FileList>, ModioError>(None))
         };
 
         let stats: StatsFuture = if args.is_present("stats") {
-            Box::new(modref.statistics().map(|s| Some(s)))
+            Box::new(modref.statistics().map(Some))
         } else {
             Box::new(future::ok::<Option<Statistics>, ModioError>(None))
         };
