@@ -94,7 +94,7 @@ pub fn exec(config: &Config, args: &ArgMatches) -> CliResult {
             .and_then(move |((file, md), checksum)| {
                 let mut file = ProgressWrapper::new(file, md.len());
                 file.progress.message("uploading: ");
-                let mut opts = AddFileOptions::new(file, filename);
+                let mut opts = AddFileOptions::with_read(file, filename);
 
                 opts.active(active);
 
