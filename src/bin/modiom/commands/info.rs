@@ -12,8 +12,8 @@ use modiom::config::Config;
 use crate::command_prelude::*;
 
 type FileList = ModioListResponse<File>;
-type FilesFuture = Box<Future<Item = Option<FileList>, Error = ModioError> + Send>;
-type StatsFuture = Box<Future<Item = Option<Statistics>, Error = ModioError> + Send>;
+type FilesFuture = Box<dyn Future<Item = Option<FileList>, Error = ModioError> + Send>;
+type StatsFuture = Box<dyn Future<Item = Option<Statistics>, Error = ModioError> + Send>;
 
 pub fn cli() -> App {
     subcommand("info")
@@ -34,7 +34,7 @@ pub fn cli() -> App {
         .arg(opt("stats", "Show the statistics."))
 }
 
-pub fn exec(config: &Config, args: &ArgMatches) -> CliResult {
+pub fn exec(config: &Config, args: &ArgMatches<'_>) -> CliResult {
     let game_id = value_t!(args, "game", u32)?;
     let mod_id = value_t!(args, "mod", u32)?;
 

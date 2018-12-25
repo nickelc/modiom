@@ -53,14 +53,14 @@ impl AsyncWrite for Md5 {
 }
 
 impl fmt::LowerHex for Md5 {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let result = self.digest.clone().result();
         fmt::LowerHex::fmt(&result, f)
     }
 }
 
 impl fmt::UpperHex for Md5 {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let result = self.digest.clone().result();
         fmt::UpperHex::fmt(&result, f)
     }

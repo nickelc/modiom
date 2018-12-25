@@ -29,7 +29,7 @@ impl<'de> Deserialize<'de> for Identifier {
         impl<'de> de::Visitor<'de> for Visitor {
             type Value = Identifier;
 
-            fn expecting(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+            fn expecting(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
                 fmt.write_str("a string or an integer")
             }
 
@@ -78,7 +78,7 @@ impl<'de> Deserialize<'de> for ModDependency {
         impl<'de> de::Visitor<'de> for Visitor {
             type Value = ModDependency;
 
-            fn expecting(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+            fn expecting(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
                 fmt.write_str("a string or an integer")
             }
 

@@ -14,7 +14,7 @@ pub fn cli() -> App {
     subcommand("login").arg(Arg::with_name("token"))
 }
 
-pub fn exec(config: &Config, args: &ArgMatches) -> CliResult {
+pub fn exec(config: &Config, args: &ArgMatches<'_>) -> CliResult {
     let token = match args.value_of("token") {
         Some(token) => token.to_string(),
         None => {

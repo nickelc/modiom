@@ -1,6 +1,5 @@
 use std::io;
 
-use crate::cfg;
 use clap;
 use modio::Error as ModioError;
 

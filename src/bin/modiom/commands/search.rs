@@ -35,7 +35,7 @@ pub fn cli() -> App {
         )
 }
 
-pub fn exec(config: &Config, args: &ArgMatches) -> CliResult {
+pub fn exec(config: &Config, args: &ArgMatches<'_>) -> CliResult {
     let mut exprs = vec![];
 
     if let Some(vals) = args.values_of("expr") {

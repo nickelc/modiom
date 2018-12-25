@@ -1,17 +1,9 @@
 #[macro_use]
 extern crate clap;
-extern crate futures;
-extern crate md5;
-extern crate modio;
-extern crate modiom;
 #[macro_use]
 extern crate nom;
-extern crate pbr;
 #[macro_use]
 extern crate prettytable;
-extern crate textwrap;
-extern crate tokio;
-extern crate toml;
 
 use modiom::config::Config;
 use modiom::errors::CliResult;

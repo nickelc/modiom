@@ -32,7 +32,7 @@ pub enum Operator {
 }
 
 impl fmt::Display for Operator {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match *self {
             Operator::Equals => write!(f, "="),
             Operator::NotEquals => write!(f, "!="),
@@ -75,7 +75,7 @@ pub struct Expr {
 }
 
 impl fmt::Display for Expr {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{} {} {}", self.property, self.op, self.right)
     }
 }
@@ -99,7 +99,7 @@ impl Condition {
 }
 
 impl fmt::Display for Condition {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Condition::Literal(Literal::Integer(i)) => fmt::Display::fmt(i, f),
             Condition::Literal(Literal::String(s)) => fmt::Debug::fmt(s, f),
@@ -128,25 +128,25 @@ mod parser {
     use nom::{digit, eol, is_alphanumeric, multispace, non_empty};
     use nom::{Context, Err as NomError};
 
-    named!(opt_multispace<CompleteStr, Option<CompleteStr>>,
+    named!(opt_multispace<CompleteStr<'_>, Option<CompleteStr<'_>>>,
         opt!(multispace)
     );
 
-    named!(identifier<CompleteStr, String>,
+    named!(identifier<CompleteStr<'_>, String>,
         do_parse!(
             ident: take_while!(|c| is_alphanumeric(c as u8) || c == '_') >>
             (String::from(ident.0))
         )
     );
 
-    named!(operator<CompleteStr, Operator>,
+    named!(operator<CompleteStr<'_>, Operator>,
         alt!(
             value!(Operator::Equals, tag!("=")) |
             value!(Operator::NotEquals, tag!("!="))
         )
     );
 
-    named!(operator_int<CompleteStr, Operator>,
+    named!(operator_int<CompleteStr<'_>, Operator>,
         alt!(
             value!(Operator::Min, tag!(">=")) |
             value!(Operator::Max, tag!("<=")) |
@@ -156,21 +156,21 @@ mod parser {
         )
     );
 
-    named!(operator_str<CompleteStr, Operator>,
+    named!(operator_str<CompleteStr<'_>, Operator>,
         alt!(
             value!(Operator::Like, tag_no_case!("like")) |
             value!(Operator::NotLike, tag_no_case!("not like"))
         )
     );
 
-    named!(operator_lst<CompleteStr, Operator>,
+    named!(operator_lst<CompleteStr<'_>, Operator>,
         alt!(
             value!(Operator::In, tag_no_case!("in")) |
             value!(Operator::NotIn, tag_no_case!("not in"))
         )
     );
 
-    named!(integer_literal<CompleteStr, Literal>,
+    named!(integer_literal<CompleteStr<'_>, Literal>,
         do_parse!(
             sign: opt!(tag!("-")) >>
             val: digit >>
@@ -184,7 +184,7 @@ mod parser {
         )
     );
 
-    named!(string_literal<CompleteStr, Literal>,
+    named!(string_literal<CompleteStr<'_>, Literal>,
         do_parse!(
             val: alt_complete!(
                 delimited!(tag!("\""), opt!(take_until!("\"")), tag!("\""))
@@ -198,14 +198,14 @@ mod parser {
         )
     );
 
-    named!(literal<CompleteStr, Literal>,
+    named!(literal<CompleteStr<'_>, Literal>,
         alt!(
             string_literal
             | integer_literal
         )
     );
 
-    named!(value_list<CompleteStr, Vec<Literal>>,
+    named!(value_list<CompleteStr<'_>, Vec<Literal>>,
         many0!(
             do_parse!(
                 val: literal >>
@@ -222,7 +222,7 @@ mod parser {
         )
     );
 
-    named!(full_expr<CompleteStr, Expr>,
+    named!(full_expr<CompleteStr<'_>, Expr>,
         do_parse!(
             left: identifier >>
             opt_multispace >>
@@ -261,7 +261,7 @@ mod parser {
         )
     );
 
-    named!(op_right_only<CompleteStr, (Option<Operator>, Condition)>,
+    named!(op_right_only<CompleteStr<'_>, (Option<Operator>, Condition)>,
         do_parse!(
             opt_multispace >>
             op_right: alt!(

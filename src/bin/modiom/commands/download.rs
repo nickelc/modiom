@@ -38,7 +38,7 @@ pub fn cli() -> App {
         )
 }
 
-pub fn exec(config: &Config, args: &ArgMatches) -> CliResult {
+pub fn exec(config: &Config, args: &ArgMatches<'_>) -> CliResult {
     let game_id = value_t!(args, "game-id", u32)?;
     let mod_ids = values_t!(args, "mod-id", u32)?;
     let _with_deps = args.is_present("with-dependencies");
@@ -64,8 +64,8 @@ pub fn exec(config: &Config, args: &ArgMatches) -> CliResult {
                 if let Some(file) = m.modfile {
                     println!("Downloading: {}", file.download.binary_url);
 
-                    let mut out = File::create(dest.join(&file.filename))?;
-                    let mut w = ProgressWrapper::new(out, file.filesize);
+                    let out = File::create(dest.join(&file.filename))?;
+                    let w = ProgressWrapper::new(out, file.filesize);
                     let (_n, mut w) = rt.block_on(modio_.download(file, w))?;
                     w.finish();
                 }

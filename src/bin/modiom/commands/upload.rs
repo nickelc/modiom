@@ -16,7 +16,7 @@ use crate::command_prelude::*;
 use crate::progress::ProgressWrapper;
 use crate::utils::{self, Md5};
 
-type ChecksumFuture = Box<Future<Item = Option<String>, Error = io::Error> + Send>;
+type ChecksumFuture = Box<dyn Future<Item = Option<String>, Error = io::Error> + Send>;
 
 pub fn cli() -> App {
     subcommand("upload")
@@ -50,7 +50,7 @@ pub fn cli() -> App {
         )
 }
 
-pub fn exec(config: &Config, args: &ArgMatches) -> CliResult {
+pub fn exec(config: &Config, args: &ArgMatches<'_>) -> CliResult {
     let game_id = value_t!(args, "game", u32)?;
     let mod_id = value_t!(args, "mod", u32)?;
     let src = value_t!(args, "src", String).map(PathBuf::from)?;

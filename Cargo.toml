@@ -31,7 +31,8 @@ toml = "0.4"
 version = "0.3"
 git = "https://github.com/nickelc/modio-rs.git"
 
-[dependencies.config]
+[dependencies.cfg]
+package = "config"
 version = "0.9"
 default-features = false
 features = ["toml"]

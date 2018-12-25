@@ -12,7 +12,7 @@ pub fn builtin() -> Vec<App> {
     ]
 }
 
-pub fn exec(cfg: &Config, args: &ArgMatches) -> CliResult {
+pub fn exec(cfg: &Config, args: &ArgMatches<'_>) -> CliResult {
     match args.subcommand() {
         ("login", Some(matches)) => login::exec(cfg, matches),
         ("info", Some(matches)) => info::exec(cfg, matches),

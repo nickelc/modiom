@@ -4,13 +4,13 @@ use std::io::prelude::*;
 use std::io::SeekFrom;
 use std::path::{Path, PathBuf};
 
+use cfg::{Config as Cfg, ConfigError};
+use cfg::{Environment, File, FileFormat};
 use dirs::home_dir;
 use lazycell::LazyCell;
 use toml::value::Table;
 use toml::Value;
 
-use crate::cfg::{Config as Cfg, ConfigError};
-use crate::cfg::{Environment, File, FileFormat};
 use crate::errors::{Error, ModiomResult};
 
 #[derive(Debug)]
