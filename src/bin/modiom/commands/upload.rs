@@ -11,10 +11,10 @@ use modio::files::AddFileOptions;
 use modio::{Error as ModioError, Modio};
 use modiom::config::Config;
 use modiom::errors::Error;
-use progress::ProgressWrapper;
-use utils::{self, Md5};
 
-use command_prelude::*;
+use crate::command_prelude::*;
+use crate::progress::ProgressWrapper;
+use crate::utils::{self, Md5};
 
 type ChecksumFuture = Box<Future<Item = Option<String>, Error = io::Error> + Send>;
 

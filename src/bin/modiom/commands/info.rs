@@ -9,7 +9,7 @@ use modio::mods::Statistics;
 use modio::{Error as ModioError, Modio, ModioListResponse};
 use modiom::config::Config;
 
-use command_prelude::*;
+use crate::command_prelude::*;
 
 type FileList = ModioListResponse<File>;
 type FilesFuture = Box<Future<Item = Option<FileList>, Error = ModioError> + Send>;

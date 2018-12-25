@@ -4,14 +4,14 @@ use std::path::PathBuf;
 
 use tokio::runtime::Runtime;
 
-use command_prelude::*;
-
 use modio::auth::Credentials;
 use modio::filter::Operator;
 use modio::mods::ModsListOptions;
 use modio::Modio;
 use modiom::config::Config;
-use progress::ProgressWrapper;
+
+use crate::command_prelude::*;
+use crate::progress::ProgressWrapper;
 
 pub fn cli() -> App {
     subcommand("download")

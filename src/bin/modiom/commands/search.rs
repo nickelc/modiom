@@ -1,14 +1,14 @@
 use prettytable::{format, Table};
 use tokio::runtime::Runtime;
 
-use command_prelude::*;
-use commands::expr;
-
 use modio::auth::Credentials;
 use modio::games::GamesListOptions;
 use modio::mods::ModsListOptions;
 use modio::Modio;
 use modiom::config::Config;
+
+use crate::command_prelude::*;
+use crate::commands::expr;
 
 pub fn cli() -> App {
     subcommand("search")

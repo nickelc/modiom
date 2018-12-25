@@ -21,7 +21,7 @@ mod commands;
 mod progress;
 mod utils;
 
-use command_prelude::*;
+use crate::command_prelude::*;
 
 fn main() -> CliResult {
     let args = App::new("modiom")

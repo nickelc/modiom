@@ -1,5 +1,6 @@
-use command_prelude::*;
 use modiom::config::Config;
+
+use crate::command_prelude::*;
 
 pub fn builtin() -> Vec<App> {
     vec![

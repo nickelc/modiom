@@ -9,10 +9,9 @@ use lazycell::LazyCell;
 use toml::value::Table;
 use toml::Value;
 
-use cfg::{Config as Cfg, ConfigError};
-use cfg::{Environment, File, FileFormat};
-
-use errors::{Error, ModiomResult};
+use crate::cfg::{Config as Cfg, ConfigError};
+use crate::cfg::{Environment, File, FileFormat};
+use crate::errors::{Error, ModiomResult};
 
 #[derive(Debug)]
 pub struct Config {

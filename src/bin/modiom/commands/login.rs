@@ -5,9 +5,10 @@ use modio::auth::Credentials;
 use modio::{Modio, ModioMessage};
 use tokio::runtime::Runtime;
 
-use command_prelude::*;
 use modiom::config::Config;
 use modiom::errors::ModiomResult;
+
+use crate::command_prelude::*;
 
 pub fn cli() -> App {
     subcommand("login").arg(Arg::with_name("token"))

@@ -58,7 +58,7 @@ pub trait ArgMatchesExt {
         self._is_present("test-env")
     }
 
-    fn _is_present(&self, &str) -> bool;
+    fn _is_present(&self, _: &str) -> bool;
 }
 
 impl<'a> ArgMatchesExt for ArgMatches<'a> {

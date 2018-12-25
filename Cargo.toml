@@ -8,6 +8,7 @@ license = "MIT/Apache-2.0"
 authors = ["Constantin Nickel <constantin.nickel@gmail.com>"]
 keywords = ["modio", "cli"]
 categories = ["command-line-utilities"]
+edition = "2018"
 
 [[bin]]
 name = "modiom"
