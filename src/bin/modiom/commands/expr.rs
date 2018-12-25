@@ -104,7 +104,7 @@ impl fmt::Display for Condition {
             Condition::Literal(Literal::Integer(i)) => fmt::Display::fmt(i, f),
             Condition::Literal(Literal::String(s)) => fmt::Debug::fmt(s, f),
             Condition::LiteralList(list) => {
-                write!(f, "(");
+                write!(f, "(")?;
                 let mut it = list.into_iter().peekable();
                 while let Some(e) = it.next() {
                     match e {
@@ -112,7 +112,7 @@ impl fmt::Display for Condition {
                         Literal::String(s) => fmt::Debug::fmt(s, f),
                     }?;
                     if it.peek().is_some() {
-                        write!(f, ", ");
+                        write!(f, ", ")?;
                     }
                 }
                 write!(f, ")")
