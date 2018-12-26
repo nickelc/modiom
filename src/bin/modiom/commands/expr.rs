@@ -91,7 +91,8 @@ impl Condition {
                     .map(|l| match l {
                         Literal::Integer(i) => i.to_string(),
                         Literal::String(s) => s,
-                    }).collect::<Vec<String>>();
+                    })
+                    .collect::<Vec<String>>();
                 OneOrMany::Many(val)
             }
         }
@@ -122,6 +123,7 @@ impl fmt::Display for Condition {
 }
 
 mod parser {
+    #![rustfmt::skip]
     use super::*;
 
     use nom::types::CompleteStr;

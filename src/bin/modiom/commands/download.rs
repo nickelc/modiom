@@ -22,7 +22,8 @@ pub fn cli() -> App {
                 .number_of_values(1)
                 .required(true)
                 .validator(validate_u32),
-        ).arg(
+        )
+        .arg(
             opt("mod-id", "Specify a mod id")
                 .value_name("ID")
                 .multiple(true)

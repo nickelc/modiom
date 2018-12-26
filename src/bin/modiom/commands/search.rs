@@ -17,14 +17,17 @@ pub fn cli() -> App {
             opt(
                 "game-id",
                 "When specified, modiom will search for mods of the game.",
-            ).value_name("ID")
+            )
+            .value_name("ID")
             .validator(validate_u32),
-        ).arg(
+        )
+        .arg(
             opt("id", "Specify the id of the game or mod.")
                 .multiple(true)
                 .number_of_values(1)
                 .value_name("ID"),
-        ).arg(opt("name", "").value_name("VALUE"))
+        )
+        .arg(opt("name", "").value_name("VALUE"))
         .arg(opt("name-id", "").value_name("VALUE"))
         .arg(Arg::with_name("ft").value_name("FULLTEXT"))
         .arg(

@@ -22,7 +22,8 @@ fn main() -> CliResult {
             AppSettings::DeriveDisplayOrder,
             AppSettings::SubcommandRequiredElseHelp,
             AppSettings::VersionlessSubcommands,
-        ]).subcommands(commands::builtin())
+        ])
+        .subcommands(commands::builtin())
         .arg(opt("test-env", "Use the mod.io test environment").global(true))
         .get_matches_safe()
         .unwrap_or_else(|e| e.exit());

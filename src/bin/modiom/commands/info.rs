@@ -24,13 +24,15 @@ pub fn cli() -> App {
                 .value_name("GAME")
                 .required(true)
                 .validator(validate_u32),
-        ).arg(
+        )
+        .arg(
             Arg::with_name("mod")
                 .help("Unique id of a mod.")
                 .value_name("MOD")
                 .required(true)
                 .validator(validate_u32),
-        ).arg(opt("files", "List all files."))
+        )
+        .arg(opt("files", "List all files."))
         .arg(opt("stats", "Show the statistics."))
 }
 

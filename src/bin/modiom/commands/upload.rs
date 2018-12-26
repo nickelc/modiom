@@ -27,19 +27,22 @@ pub fn cli() -> App {
                 .value_name("GAME")
                 .required(true)
                 .validator(validate_u32),
-        ).arg(
+        )
+        .arg(
             Arg::with_name("mod")
                 .help("Unique id of the mod.")
                 .value_name("MOD")
                 .required(true)
                 .validator(validate_u32),
-        ).arg(opt("filename", "Overwrite the filename.").value_name("NAME"))
+        )
+        .arg(opt("filename", "Overwrite the filename.").value_name("NAME"))
         .arg(opt("version", "Version of this file release.").value_name("VERSION"))
         .arg(opt("changelog", "Changelog of this release.").value_name("CHANGELOG"))
         .arg(opt(
             "not-active",
             "When this flag is enabled, the uploaded file will not be labeled as current release.",
-        )).arg(opt("metadata-blob", "").value_name("BLOB"))
+        ))
+        .arg(opt("metadata-blob", "").value_name("BLOB"))
         .arg(opt("checksum", "Calculate the checksum before uploading."))
         .arg(
             Arg::with_name("src")
