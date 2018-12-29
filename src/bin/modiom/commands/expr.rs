@@ -123,7 +123,6 @@ impl fmt::Display for Condition {
 }
 
 mod parser {
-    #![rustfmt::skip]
     use super::*;
 
     use nom::types::CompleteStr;
