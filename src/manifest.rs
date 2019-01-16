@@ -3,12 +3,14 @@ use std::fmt;
 
 use serde::de::{self, Deserialize};
 
+pub type ModDependencies = BTreeMap<String, ModDependency>;
+
 #[derive(Debug, Serialize, Deserialize)]
-#[serde(rename = "kebab-case")]
+#[serde(rename_all = "kebab-case")]
 pub struct ModioManifest {
     game: Identifier,
     with_dependencies: Option<bool>,
-    mods: Option<BTreeMap<String, ModDependency>>,
+    mods: Option<ModDependencies>,
 }
 
 #[derive(Debug, Serialize)]
@@ -118,7 +120,7 @@ impl<'de> Deserialize<'de> for ModDependency {
 // }}}
 
 #[derive(Debug, Serialize, Deserialize)]
-#[serde(rename = "kebab-case")]
+#[serde(rename_all = "kebab-case")]
 pub struct DetailedModDependency {
     id: Identifier,
     with_dependencies: Option<bool>,
