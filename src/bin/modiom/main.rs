@@ -31,5 +31,11 @@ fn main() -> CliResult {
     let mut config = Config::default()?;
     config.configure(args.is_test_env())?;
 
-    commands::exec(&config, &args)
+    match commands::exec(&config, &args) {
+        Err(e) => {
+            eprintln!("{}", e);
+            std::process::exit(1);
+        }
+        Ok(()) => Ok(()),
+    }
 }

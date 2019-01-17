@@ -1,3 +1,4 @@
+use std::fmt;
 use std::io;
 
 use clap;
@@ -13,6 +14,18 @@ pub enum Error {
     Io(io::Error),
     Modio(ModioError),
     Message(String),
+}
+
+impl fmt::Display for Error {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Error::Clap(err) => err.fmt(fmt),
+            Error::Config(err) => err.fmt(fmt),
+            Error::Io(err) => err.fmt(fmt),
+            Error::Modio(err) => err.fmt(fmt),
+            Error::Message(msg) => msg.fmt(fmt),
+        }
+    }
 }
 
 impl From<clap::Error> for Error {
