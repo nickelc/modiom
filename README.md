@@ -19,7 +19,7 @@ Building is easy:
 
 ```
 $ git clone https://github.com/nickelc/modiom.git
-$ cd hpk
+$ cd modiom
 $ cargo build --release
 $ ./target/release/modiom --version
 modiom 0.1.0
