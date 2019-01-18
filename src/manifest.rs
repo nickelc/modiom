@@ -1,7 +1,11 @@
 use std::collections::BTreeMap;
 use std::fmt;
+use std::path::Path;
 
 use serde::de::{self, Deserialize};
+
+use crate::errors::ModiomResult;
+use crate::utils;
 
 pub type ModDependencies = BTreeMap<String, ModDependency>;
 
@@ -124,6 +128,15 @@ impl<'de> Deserialize<'de> for ModDependency {
 pub struct DetailedModDependency {
     id: Identifier,
     with_dependencies: Option<bool>,
+}
+
+pub fn read(path: &Path) -> ModiomResult<ModioManifest> {
+    utils::read(&path).and_then(|content| parse(&content, &path))
+}
+
+pub fn parse(content: &str, path: &Path) -> ModiomResult<ModioManifest> {
+    toml::from_str(&content)
+        .map_err(|_| format!("failed to parse manifest at `{}`", path.display()).into())
 }
 
 // vim: fdm=marker

@@ -11,7 +11,6 @@ use modiom::errors::CliResult;
 mod command_prelude;
 mod commands;
 mod progress;
-mod utils;
 
 use crate::command_prelude::*;
 

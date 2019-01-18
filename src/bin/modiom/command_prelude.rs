@@ -1,9 +1,12 @@
+use std::fs;
 use std::path::PathBuf;
 
 use clap::{self, SubCommand};
 
 pub use clap::{AppSettings, Arg, ArgGroup, ArgMatches};
-pub use modiom::errors::CliResult;
+pub use modiom::config::Config;
+pub use modiom::errors::{CliResult, Error, ModiomResult};
+use modiom::utils::find_manifest_for_wd;
 
 pub type App = clap::App<'static, 'static>;
 
@@ -53,16 +56,60 @@ pub fn validate_u32(value: String) -> Result<(), String> {
     }
 }
 
+pub trait AppExt: Sized {
+    fn _arg(self, arg: Arg<'static, 'static>) -> Self;
+
+    fn arg_manifest_path(self) -> Self {
+        self._arg(opt("manifest-path", "Path to Modio.toml").value_name("PATH"))
+    }
+}
+
+impl AppExt for App {
+    fn _arg(self, arg: Arg<'static, 'static>) -> Self {
+        self.arg(arg)
+    }
+}
+
 pub trait ArgMatchesExt {
     fn is_test_env(&self) -> bool {
         self._is_present("test-env")
     }
 
     fn _is_present(&self, _: &str) -> bool;
+
+    fn _value_of(&self, name: &str) -> Option<&str>;
+
+    fn value_of_path(&self, name: &str) -> Option<PathBuf> {
+        self._value_of(name).map(PathBuf::from)
+    }
+
+    fn root_manifest(&self, config: &Config) -> ModiomResult<PathBuf>;
 }
 
 impl<'a> ArgMatchesExt for ArgMatches<'a> {
     fn _is_present(&self, name: &str) -> bool {
         self.is_present(name)
+    }
+
+    fn _value_of(&self, name: &str) -> Option<&str> {
+        self.value_of(name)
+    }
+
+    fn root_manifest(&self, config: &Config) -> ModiomResult<PathBuf> {
+        if let Some(path) = self.value_of_path("manifest-path") {
+            if !path.ends_with("Modio.toml") {
+                return Err(Error::Message(
+                    "the manifest-path must be a path to a Modio.toml file".into(),
+                ));
+            }
+            if fs::metadata(&path).is_err() {
+                return Err(Error::Message(format!(
+                    "manifest-path `{}` does not exist",
+                    path.display(),
+                )));
+            }
+            return Ok(path);
+        }
+        find_manifest_for_wd(config.cwd())
     }
 }
