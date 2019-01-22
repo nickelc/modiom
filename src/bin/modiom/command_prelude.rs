@@ -3,10 +3,12 @@ use std::path::PathBuf;
 
 use clap::{self, SubCommand};
 
+pub use clap::{value_t, values_t};
 pub use clap::{AppSettings, Arg, ArgGroup, ArgMatches};
 pub use modiom::config::Config;
 pub use modiom::errors::{CliResult, Error, ModiomResult};
 use modiom::utils::find_manifest_for_wd;
+pub use prettytable::{cell, row, table};
 
 pub type App = clap::App<'static, 'static>;
 

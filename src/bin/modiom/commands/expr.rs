@@ -126,8 +126,8 @@ mod parser {
     use super::*;
 
     use nom::types::CompleteStr;
-    use nom::{digit, eol, is_alphanumeric, multispace, non_empty};
-    use nom::{Context, Err as NomError};
+    use nom::Err as NomError;
+    use nom::*;
 
     named!(opt_multispace<CompleteStr<'_>, Option<CompleteStr<'_>>>,
         opt!(multispace)

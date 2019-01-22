@@ -1,10 +1,3 @@
-#[macro_use]
-extern crate clap;
-#[macro_use]
-extern crate nom;
-#[macro_use]
-extern crate prettytable;
-
 use modiom::config::Config;
 use modiom::errors::CliResult;
 
