@@ -60,11 +60,14 @@ impl Config {
     }
 
     pub fn auth_token(&self) -> ModiomResult<Option<String>> {
-        if self.test_env {
-            Ok(self.get_string("auth.test.token")?)
-        } else {
-            Ok(self.get_string("auth.token")?)
-        }
+        (|| -> ModiomResult<_> {
+            if self.test_env {
+                Ok(self.get_string("auth.test.token")?)
+            } else {
+                Ok(self.get_string("auth.token")?)
+            }
+        })()
+        .map_err(format_err!(map "failed to read authentication token"))
     }
 
     fn cfg(&self) -> ModiomResult<&Cfg> {

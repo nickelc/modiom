@@ -1,3 +1,5 @@
 macro_rules! format_err {
-    ($($arg:tt)*) => { crate::errors::Error::Message(format!($($arg)*)) }
+    (map $($arg:tt)*) => { |_| crate::errors::Error::Message(format!($($arg)*)) };
+    (ok $($arg:tt)*) => { || crate::errors::Error::Message(format!($($arg)*)) };
+    ($($arg:tt)*) => { crate::errors::Error::Message(format!($($arg)*)) };
 }

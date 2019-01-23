@@ -136,7 +136,7 @@ pub fn read(path: &Path) -> ModiomResult<ModioManifest> {
 
 pub fn parse(content: &str, path: &Path) -> ModiomResult<ModioManifest> {
     toml::from_str(&content)
-        .map_err(|_| format!("failed to parse manifest at `{}`", path.display()).into())
+        .map_err(format_err!(map "failed to parse manifest at `{}`", path.display()))
 }
 
 // vim: fdm=marker

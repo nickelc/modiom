@@ -7,21 +7,18 @@ use std::path::{Path, PathBuf};
 use md5::{self, Digest};
 use tokio::prelude::*;
 
-use crate::errors::{Error, ModiomResult};
+use crate::errors::ModiomResult;
 
 pub fn find_manifest_for_wd(cwd: &Path) -> ModiomResult<PathBuf> {
     let file = "Modio.toml";
     cwd.ancestors()
         .map(|p| p.join(file))
         .find(|p| fs::metadata(p).is_ok())
-        .ok_or_else(|| {
-            format!(
-                "Could not find `{}` in `{}` or any parent directory",
-                file,
-                cwd.display()
-            )
-            .into()
-        })
+        .ok_or_else(format_err!(
+            ok "Could not find `{}` in `{}` or any parent directory",
+            file,
+            cwd.display()
+        ))
 }
 
 pub fn read(path: &Path) -> ModiomResult<String> {
@@ -31,7 +28,7 @@ pub fn read(path: &Path) -> ModiomResult<String> {
         f.read_to_string(&mut ret)?;
         Ok(ret)
     })()
-    .map_err(|_| Error::from(format!("failed to read `{}`", path.display())))
+    .map_err(format_err!(map "failed to read `{}`", path.display()))
 }
 
 pub fn copy<R: ?Sized, W: ?Sized>(reader: &mut R, writer: &mut W) -> io::Result<u64>
