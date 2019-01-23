@@ -1,19 +1,13 @@
-use futures::{future, Future};
+use futures::{future, future::Either, Future};
 use prettytable::format;
 use textwrap::fill;
 use tokio::runtime::Runtime;
 
 use modio::auth::Credentials;
-use modio::files::File;
-use modio::mods::Statistics;
-use modio::{Error as ModioError, Modio, ModioListResponse};
+use modio::Modio;
 use modiom::config::Config;
 
 use crate::command_prelude::*;
-
-type FileList = ModioListResponse<File>;
-type FilesFuture = Box<dyn Future<Item = Option<FileList>, Error = ModioError> + Send>;
-type StatsFuture = Box<dyn Future<Item = Option<Statistics>, Error = ModioError> + Send>;
 
 pub fn cli() -> App {
     subcommand("info")
@@ -46,16 +40,16 @@ pub fn exec(config: &Config, args: &ArgMatches<'_>) -> CliResult {
 
         let modref = modio.mod_(game_id, mod_id);
 
-        let files: FilesFuture = if args.is_present("files") {
-            Box::new(modref.files().list(&Default::default()).map(Some))
+        let files = if args.is_present("files") {
+            Either::A(modref.files().list(&Default::default()).map(Some))
         } else {
-            Box::new(future::ok::<Option<FileList>, ModioError>(None))
+            Either::B(future::ok(None))
         };
 
-        let stats: StatsFuture = if args.is_present("stats") {
-            Box::new(modref.statistics().map(Some))
+        let stats = if args.is_present("stats") {
+            Either::A(modref.statistics().map(Some))
         } else {
-            Box::new(future::ok::<Option<Statistics>, ModioError>(None))
+            Either::B(future::ok(None))
         };
 
         let mod_ = modref.get();

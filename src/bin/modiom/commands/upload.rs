@@ -1,7 +1,6 @@
-use std::io;
 use std::path::PathBuf;
 
-use futures::{future, Future};
+use futures::{future, future::Either, Future};
 use prettytable::format;
 use tokio::fs::File;
 use tokio::runtime::Runtime;
@@ -15,8 +14,6 @@ use modiom::utils::{self, Md5};
 
 use crate::command_prelude::*;
 use crate::progress::ProgressWrapper;
-
-type ChecksumFuture = Box<dyn Future<Item = Option<String>, Error = io::Error> + Send>;
 
 pub fn cli() -> App {
     subcommand("upload")
@@ -76,8 +73,8 @@ pub fn exec(config: &Config, args: &ArgMatches<'_>) -> CliResult {
                 .ok_or_else::<Error, _>(|| "Failed to get the filename".into())?
         };
 
-        let checksum: ChecksumFuture = if args.is_present("checksum") {
-            Box::new(File::open(src.clone()).and_then(|file| {
+        let checksum = if args.is_present("checksum") {
+            Either::A(File::open(src.clone()).and_then(|file| {
                 file.metadata().and_then(|(mut file, metadata)| {
                     let mut out = ProgressWrapper::new(Md5::new(), metadata.len());
                     out.progress.message("calculating checksum: ");
@@ -87,7 +84,7 @@ pub fn exec(config: &Config, args: &ArgMatches<'_>) -> CliResult {
                 })
             }))
         } else {
-            Box::new(future::ok::<Option<String>, io::Error>(None))
+            Either::B(future::ok(None))
         };
 
         let upload = File::open(src.clone())
