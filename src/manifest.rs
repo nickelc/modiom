@@ -12,9 +12,8 @@ pub type ModDependencies = BTreeMap<String, ModDependency>;
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "kebab-case")]
 pub struct ModioManifest {
-    game: Identifier,
-    with_dependencies: Option<bool>,
-    mods: Option<ModDependencies>,
+    pub game: Game,
+    pub mods: Option<ModDependencies>,
 }
 
 #[derive(Debug, Serialize)]
@@ -22,6 +21,13 @@ pub struct ModioManifest {
 pub enum Identifier {
     Id(u32),
     NameId(String),
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub struct Game {
+    pub id: Identifier,
+    pub with_dependencies: Option<bool>,
 }
 
 // {{{ impl Deserialize for Identifier
@@ -71,6 +77,15 @@ impl<'de> Deserialize<'de> for Identifier {
 pub enum ModDependency {
     Simple(Identifier),
     Detailed(DetailedModDependency),
+}
+
+impl ModDependency {
+    pub fn id(&self) -> &Identifier {
+        match *self {
+            ModDependency::Simple(ref id) => &id,
+            ModDependency::Detailed(ref mod_) => &mod_.id,
+        }
+    }
 }
 
 // {{{ impl Deserialize for ModDependency
@@ -126,8 +141,8 @@ impl<'de> Deserialize<'de> for ModDependency {
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "kebab-case")]
 pub struct DetailedModDependency {
-    id: Identifier,
-    with_dependencies: Option<bool>,
+    pub id: Identifier,
+    pub with_dependencies: Option<bool>,
 }
 
 pub fn read(path: &Path) -> ModiomResult<ModioManifest> {
