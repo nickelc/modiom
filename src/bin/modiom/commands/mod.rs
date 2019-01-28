@@ -9,6 +9,7 @@ pub fn builtin() -> Vec<App> {
         search::cli(),
         download::cli(),
         upload::cli(),
+        install::cli(),
     ]
 }
 
@@ -19,6 +20,7 @@ pub fn exec(cfg: &Config, args: &ArgMatches<'_>) -> CliResult {
         ("search", Some(matches)) => search::exec(cfg, matches),
         ("download", Some(matches)) => download::exec(cfg, matches),
         ("upload", Some(matches)) => upload::exec(cfg, matches),
+        ("install", Some(matches)) => install::exec(cfg, matches),
         _ => unreachable!(),
     }
 }
@@ -26,6 +28,7 @@ pub fn exec(cfg: &Config, args: &ArgMatches<'_>) -> CliResult {
 mod download;
 mod expr;
 mod info;
+mod install;
 mod login;
 mod search;
 mod upload;
