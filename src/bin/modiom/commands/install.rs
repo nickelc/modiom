@@ -1,11 +1,9 @@
 use std::path::Path;
 
 use futures::{future, future::Either, Future as StdFuture};
-use modio::auth::Credentials;
 use modio::filter::Operator;
 use modio::games::GamesListOptions;
 use modio::mods::ModsListOptions;
-use modio::Modio;
 use modiom::errors::Error;
 use modiom::manifest::{self, Identifier};
 use tokio::fs::File;
@@ -31,13 +29,8 @@ pub fn exec(config: &Config, args: &ArgMatches) -> CliResult {
         _ => return Err("no mods defined".into()),
     }
 
-    let token = match config.auth_token()? {
-        Some(token) => token,
-        None => return Err("no authentication token".into()),
-    };
-
     let mut rt = Runtime::new()?;
-    let modio = Modio::host(config.host(), "modiom", Credentials::Token(token));
+    let modio = config.client()?;
 
     let game_id = match manifest.game.id {
         Identifier::Id(id) => Either::A(future::ok(id)),

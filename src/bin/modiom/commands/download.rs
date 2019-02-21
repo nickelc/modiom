@@ -4,10 +4,8 @@ use std::path::PathBuf;
 
 use tokio::runtime::Runtime;
 
-use modio::auth::Credentials;
 use modio::filter::Operator;
 use modio::mods::ModsListOptions;
-use modio::Modio;
 use modiom::config::Config;
 
 use crate::command_prelude::*;
@@ -48,34 +46,32 @@ pub fn exec(config: &Config, args: &ArgMatches<'_>) -> CliResult {
         .map(PathBuf::from)
         .unwrap_or_else(PathBuf::new);
 
-    if let Ok(Some(token)) = config.auth_token() {
-        let mut rt = Runtime::new()?;
-        let modio_ = Modio::host(config.host(), "modiom", Credentials::Token(token));
+    let mut rt = Runtime::new()?;
+    let modio_ = config.client()?;
 
-        let mut missing_mods: HashSet<u32> = HashSet::new();
-        missing_mods.extend(&mod_ids);
+    let mut missing_mods: HashSet<u32> = HashSet::new();
+    missing_mods.extend(&mod_ids);
 
-        let mut opts = ModsListOptions::new();
-        opts.id(Operator::In, mod_ids);
+    let mut opts = ModsListOptions::new();
+    opts.id(Operator::In, mod_ids);
 
-        let list = rt.block_on(modio_.game(game_id).mods().list(&opts));
+    let list = rt.block_on(modio_.game(game_id).mods().list(&opts));
 
-        if let Ok(mods) = list {
-            for m in mods {
-                if let Some(file) = m.modfile {
-                    println!("Downloading: {}", file.download.binary_url);
+    if let Ok(mods) = list {
+        for m in mods {
+            if let Some(file) = m.modfile {
+                println!("Downloading: {}", file.download.binary_url);
 
-                    let out = File::create(dest.join(&file.filename))?;
-                    let w = ProgressWrapper::new(out, file.filesize);
-                    let (_n, mut w) = rt.block_on(modio_.download(file, w))?;
-                    w.finish();
-                }
-                missing_mods.remove(&m.id);
+                let out = File::create(dest.join(&file.filename))?;
+                let w = ProgressWrapper::new(out, file.filesize);
+                let (_n, mut w) = rt.block_on(modio_.download(file, w))?;
+                w.finish();
             }
+            missing_mods.remove(&m.id);
         }
-        for mm in missing_mods {
-            println!("Mod.id: {} does not exist or has no primary file. ", mm);
-        }
+    }
+    for mm in missing_mods {
+        println!("Mod.id: {} does not exist or has no primary file. ", mm);
     }
 
     Ok(())

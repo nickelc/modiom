@@ -11,6 +11,9 @@ use lazycell::LazyCell;
 use toml::value::Table;
 use toml::Value;
 
+use modio::auth::Credentials;
+use modio::Modio;
+
 use crate::errors::{Error, ModiomResult};
 
 #[derive(Debug)]
@@ -68,6 +71,18 @@ impl Config {
             }
         })()
         .map_err(format_err!(map "failed to read authentication token"))
+    }
+
+    pub fn client(&self) -> ModiomResult<Modio> {
+        let token = self
+            .auth_token()?
+            .ok_or_else(format_err!(ok "authentication token required"))?;
+
+        Modio::builder(Credentials::Token(token))
+            .host(self.host())
+            .agent("modiom")
+            .build()
+            .map_err(Error::from)
     }
 
     fn cfg(&self) -> ModiomResult<&Cfg> {
