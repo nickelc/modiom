@@ -2,7 +2,7 @@ use std::io::{self, BufRead, Write};
 
 use clap::Arg;
 use modio::auth::Credentials;
-use modio::{Modio, ModioMessage};
+use modio::Modio;
 use tokio::runtime::Runtime;
 
 use modiom::config::Config;
@@ -16,7 +16,7 @@ pub fn cli() -> App {
 
 pub fn exec(config: &Config, args: &ArgMatches<'_>) -> CliResult {
     let token = match args.value_of("token") {
-        Some(token) => token.to_string(),
+        Some(token) => Credentials::Token(token.to_string()),
         None => {
             let url = if args.is_test_env() {
                 "https://test.mod.io/apikey"
@@ -31,7 +31,7 @@ pub fn exec(config: &Config, args: &ArgMatches<'_>) -> CliResult {
             let mut rt = Runtime::new()?;
             let m = Modio::host(config.host(), Credentials::ApiKey(api_key))?;
 
-            let ModioMessage { message, .. } = rt.block_on(m.auth().request_code(&email))?;
+            let message = rt.block_on(m.auth().request_code(&email))?;
             println!("{}", message);
 
             loop {
@@ -50,7 +50,7 @@ pub fn exec(config: &Config, args: &ArgMatches<'_>) -> CliResult {
         }
     }
 
-    config.save_credentials(token)?;
+    config.save_credentials(token.to_string())?;
     Ok(())
 }
 

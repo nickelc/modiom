@@ -62,7 +62,7 @@ impl Config {
         }
     }
 
-    pub fn auth_token(&self) -> ModiomResult<Option<String>> {
+    pub fn auth_token(&self) -> ModiomResult<Option<Credentials>> {
         (|| -> ModiomResult<_> {
             if self.test_env {
                 Ok(self.get_string("auth.test.token")?)
@@ -70,6 +70,7 @@ impl Config {
                 Ok(self.get_string("auth.token")?)
             }
         })()
+        .map(|t| t.map(|t| Credentials::Token(t)))
         .map_err(format_err!(map "failed to read authentication token"))
     }
 
@@ -78,7 +79,7 @@ impl Config {
             .auth_token()?
             .ok_or_else(format_err!(ok "authentication token required"))?;
 
-        Modio::builder(Credentials::Token(token))
+        Modio::builder(token)
             .host(self.host())
             .agent("modiom")
             .build()
