@@ -93,25 +93,25 @@ pub fn exec(config: &Config, args: &ArgMatches<'_>) -> CliResult {
             file.progress.message("uploading: ");
             let mut opts = AddFileOptions::with_read(file, filename);
 
-            opts.active(active);
+            opts = opts.active(active);
 
             if let Ok(version) = version {
-                opts.version(version);
+                opts = opts.version(version);
             }
             if let Ok(changelog) = changelog {
-                opts.changelog(changelog);
+                opts = opts.changelog(changelog);
             }
             if let Ok(metadata) = metadata {
-                opts.metadata_blob(metadata);
+                opts = opts.metadata_blob(metadata);
             }
             if let Some(checksum) = checksum {
-                opts.filehash(checksum);
+                opts = opts.filehash(checksum);
             }
 
             modio
                 .mod_(game_id, mod_id)
                 .files()
-                .add(opts.build())
+                .add(opts)
                 .map_err(Error::from)
         });
 

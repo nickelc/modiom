@@ -1,8 +1,8 @@
 use prettytable::{format, Table};
 use tokio::runtime::Runtime;
 
-use modio::games::GamesListOptions;
-use modio::mods::ModsListOptions;
+use modio::filter::prelude::*;
+use modio::filter::custom_filter;
 use modiom::config::Config;
 
 use crate::command_prelude::*;
@@ -65,21 +65,21 @@ pub fn exec(config: &Config, args: &ArgMatches<'_>) -> CliResult {
     let m = config.client()?;
 
     if let Ok(game_id) = game_id {
-        let mut opts = ModsListOptions::new();
+        let mut f = Filter::default();
         for e in exprs {
             filter.add_row(row![e]);
-            opts.add_filter(e.property, e.op.into(), e.right.into_value());
+            f = f.and(custom_filter(e.property, e.op.into(), e.right.into_value()));
         }
         if let Some(ft) = args.value_of("ft") {
             filter.add_row(row![format!("fulltext = {:?}", ft)]);
-            opts.fulltext(ft);
+            f = f.and(Fulltext::eq(ft));
         }
         if !filter.is_empty() {
             filter.printstd();
             println!();
         }
 
-        let list = rt.block_on(m.game(game_id).mods().list(&opts));
+        let list = rt.block_on(m.game(game_id).mods().list(&f));
         if let Ok(list) = list {
             let mut output = Table::new();
             output.set_format(*format::consts::FORMAT_CLEAN);
@@ -97,21 +97,21 @@ pub fn exec(config: &Config, args: &ArgMatches<'_>) -> CliResult {
             output.printstd();
         }
     } else {
-        let mut opts = GamesListOptions::new();
+        let mut f = Filter::default();
         for e in exprs {
             filter.add_row(row![e]);
-            opts.add_filter(e.property, e.op.into(), e.right.into_value());
+            f = f.and(custom_filter(e.property, e.op.into(), e.right.into_value()));
         }
         if let Some(ft) = args.value_of("ft") {
             filter.add_row(row![format!("fulltext = {:?}", ft)]);
-            opts.fulltext(ft);
+            f = f.and(Fulltext::eq(ft));
         }
         if !filter.is_empty() {
             filter.printstd();
             println!();
         }
 
-        let list = rt.block_on(m.games().list(&opts));
+        let list = rt.block_on(m.games().list(&f));
         if let Ok(list) = list {
             let mut output = Table::new();
             output.set_format(*format::consts::FORMAT_CLEAN);

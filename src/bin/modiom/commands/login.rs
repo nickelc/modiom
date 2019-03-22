@@ -31,8 +31,8 @@ pub fn exec(config: &Config, args: &ArgMatches<'_>) -> CliResult {
             let mut rt = Runtime::new()?;
             let m = Modio::host(config.host(), Credentials::ApiKey(api_key))?;
 
-            let message = rt.block_on(m.auth().request_code(&email))?;
-            println!("{}", message);
+            rt.block_on(m.auth().request_code(&email))?;
+            println!("Authentication code request was successful.");
 
             loop {
                 let code = prompt("Enter security code: ")?;

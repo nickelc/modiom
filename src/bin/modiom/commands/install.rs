@@ -1,9 +1,7 @@
 use std::path::Path;
 
 use futures::{future, future::Either, Future as StdFuture};
-use modio::filter::Operator;
-use modio::games::GamesListOptions;
-use modio::mods::ModsListOptions;
+use modio::filter::prelude::*;
 use modiom::errors::Error;
 use modiom::manifest::{self, Identifier};
 use tokio::fs::File;
@@ -36,12 +34,11 @@ pub fn exec(config: &Config, args: &ArgMatches) -> CliResult {
         Identifier::Id(id) => Either::A(future::ok(id)),
         Identifier::NameId(ref id) => {
             let err = format_err!("no matching game named `{}` found", id);
-            let mut opts = GamesListOptions::new();
-            opts.name_id(Operator::Equals, id);
+            let filter = NameId::eq(id);
             Either::B(
                 modio
                     .games()
-                    .list(&opts)
+                    .list(&filter)
                     .map_err(Error::from)
                     .and_then(|list| match list.first() {
                         Some(game) => Ok(game.id),
@@ -57,21 +54,21 @@ pub fn exec(config: &Config, args: &ArgMatches) -> CliResult {
             .iter()
             .map(move |(_, m)| {
                 let modio2 = modio.clone();
-                let mut opts = ModsListOptions::new();
+                let mut filter;
                 let not_found = match m.id() {
                     Identifier::Id(id) => {
-                        opts.id(Operator::Equals, id);
+                        filter = Id::eq(id);
                         format_err!("mod with id `{}` not found", id)
                     }
                     Identifier::NameId(id) => {
-                        opts.name_id(Operator::Equals, id);
+                        filter = NameId::eq(id);
                         format_err!("mod with name-id `{}` not found", id)
                     }
                 };
                 modio
                     .game(game_id)
                     .mods()
-                    .list(&opts)
+                    .list(&filter)
                     .map_err(Error::from)
                     .and_then(|mut list| match list.shift() {
                         Some(mod_) => Ok(mod_),

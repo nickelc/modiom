@@ -4,8 +4,7 @@ use std::path::PathBuf;
 
 use tokio::runtime::Runtime;
 
-use modio::filter::Operator;
-use modio::mods::ModsListOptions;
+use modio::filter::prelude::*;
 use modiom::config::Config;
 
 use crate::command_prelude::*;
@@ -52,10 +51,9 @@ pub fn exec(config: &Config, args: &ArgMatches<'_>) -> CliResult {
     let mut missing_mods: HashSet<u32> = HashSet::new();
     missing_mods.extend(&mod_ids);
 
-    let mut opts = ModsListOptions::new();
-    opts.id(Operator::In, mod_ids);
+    let filter = Id::_in(mod_ids);
 
-    let list = rt.block_on(modio_.game(game_id).mods().list(&opts));
+    let list = rt.block_on(modio_.game(game_id).mods().list(&filter));
 
     if let Ok(mods) = list {
         for m in mods {
