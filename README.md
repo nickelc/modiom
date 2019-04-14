@@ -11,6 +11,58 @@
 
 modiom is a command line tool for [mod.io](https://mod.io) to search, download and update mods for games without builtin support.
 
+## The Modio Manifest Format
+
+The `Modio.toml` file
+
+### The `[game]` section
+
+```toml
+[game]
+# id = (int|string)
+id = "gametwo" # the name_id of the game or alternative its id
+```
+
+#### The `with-dependencies` field (optional)
+
+This field specifies globally whether dependencies of mods are downloaded.
+If you don't specify the field, it will default to `false`.
+
+```toml
+[game]
+# ...
+with-dependencies = true
+```
+
+### Specifying mods
+
+```toml
+[mods]
+mod1 = 1
+mod2 = "mod-two"
+mod3 = { id = "mod-three" }
+
+[mods.mod4]
+id = 4
+with-dependencies = true
+```
+
+#### The `with-dependencies` field (optional)
+
+This field specifies whether dependencies of the mod are downloaded and overrides the global setting.
+If you don't specify the field, it will default to `false`.
+
+#### The `version` field (optional)
+
+This field specifies the downloaded version or the file id.
+
+```toml
+[mods.mod1]
+id = "mod-one"
+version = "1.2"
+# version = 34
+```
+
 ## Building
 
 modiom is written in Rust, so you'll need to grab a
