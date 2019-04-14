@@ -86,6 +86,13 @@ impl ModDependency {
             ModDependency::Detailed(ref mod_) => &mod_.id,
         }
     }
+
+    pub fn version(&self) -> Option<&Identifier> {
+        match *self {
+            ModDependency::Simple(_) => None,
+            ModDependency::Detailed(ref mod_) => mod_.version.as_ref(),
+        }
+    }
 }
 
 // {{{ impl Deserialize for ModDependency
@@ -143,6 +150,7 @@ impl<'de> Deserialize<'de> for ModDependency {
 pub struct DetailedModDependency {
     pub id: Identifier,
     pub with_dependencies: Option<bool>,
+    pub version: Option<Identifier>,
 }
 
 pub fn read(path: &Path) -> ModiomResult<ModioManifest> {
