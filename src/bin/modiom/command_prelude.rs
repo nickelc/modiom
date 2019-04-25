@@ -115,23 +115,3 @@ impl<'a> ArgMatchesExt for ArgMatches<'a> {
         find_manifest_for_wd(config.cwd())
     }
 }
-
-pub trait ModioListResponseExt<T> {
-    fn first(&self) -> Option<&T>;
-
-    fn shift(&mut self) -> Option<T>;
-}
-
-impl<T> ModioListResponseExt<T> for modio::ModioListResponse<T> {
-    fn first(&self) -> Option<&T> {
-        self.data.get(0)
-    }
-
-    fn shift(&mut self) -> Option<T> {
-        if self.data.is_empty() {
-            None
-        } else {
-            Some(self.data.remove(0))
-        }
-    }
-}
