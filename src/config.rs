@@ -131,7 +131,7 @@ impl Config {
 
         if let Some(table) = toml.as_table_mut() {
             let auth = table
-                .entry("auth".into())
+                .entry("auth")
                 .or_insert_with(|| Table::new().into());
 
             // Make sure an existing value is a table

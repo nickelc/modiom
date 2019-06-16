@@ -15,7 +15,7 @@ name = "modiom"
 
 [dependencies]
 clap = "2"
-dirs = "1"
+dirs = "2"
 futures = "0.1"
 lazycell = "1"
 md-5 = "0.8"
@@ -23,9 +23,9 @@ nom = "4"
 pbr = "1"
 serde = "1"
 serde_derive = "1"
-textwrap = "0.10"
+textwrap = "0.11"
 tokio = "0.1"
-toml = "0.4"
+toml = "0.5"
 
 [dependencies.modio]
 version = "0.4"
