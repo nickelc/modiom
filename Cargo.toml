@@ -14,9 +14,10 @@ edition = "2018"
 name = "modiom"
 
 [dependencies]
+bytes = "0.4"
 clap = "2"
 dirs = "2"
-futures = "0.1"
+futures-preview = "=0.3.0-alpha.19"
 lazycell = "1"
 md-5 = "0.8"
 nom = "5"
@@ -24,7 +25,7 @@ pbr = "1"
 serde = "1"
 serde_derive = "1"
 textwrap = "0.11"
-tokio = "0.1"
+tokio = "=0.2.0-alpha.6"
 toml = "0.5"
 
 [dependencies.modio]

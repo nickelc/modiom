@@ -7,4 +7,5 @@ mod macros;
 pub mod config;
 pub mod errors;
 pub mod manifest;
+pub mod md5;
 pub mod utils;

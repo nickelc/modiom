@@ -1,14 +1,12 @@
 use std::path::Path;
 
-use futures::{future, future::Either, Future as StdFuture};
+use futures::{future, TryFutureExt};
 use modio::filter::prelude::*;
 use modiom::errors::Error;
 use modiom::manifest::{self, Identifier};
-use tokio::fs::File;
 use tokio::runtime::Runtime;
 
 use crate::command_prelude::*;
-use crate::progress::ProgressWrapper;
 
 macro_rules! format_err {
     ($($arg:tt)*) => { Error::Message(format!($($arg)*)) };
@@ -27,34 +25,29 @@ pub fn exec(config: &Config, args: &ArgMatches) -> CliResult {
         _ => return Err("no mods defined".into()),
     }
 
-    let mut rt = Runtime::new()?;
+    let rt = Runtime::new()?;
     let modio = config.client()?;
 
-    let game_id = match manifest.game.id {
-        Identifier::Id(id) => Either::A(future::ok(id)),
-        Identifier::NameId(ref id) => {
-            let err = format_err!("no matching game named `{}` found", id);
-            let filter = NameId::eq(id);
-            Either::B(
-                modio
-                    .games()
-                    .list(&filter)
-                    .map_err(Error::from)
-                    .and_then(|list| match list.first() {
-                        Some(game) => Ok(game.id),
-                        None => Err(err),
-                    }),
-            )
-        }
-    };
-    let tasks = game_id.and_then(|game_id| {
+    let tasks = async {
+        let game_id = match manifest.game.id {
+            Identifier::Id(id) => id,
+            Identifier::NameId(ref id) => {
+                let filter = NameId::eq(id);
+                let list = modio.games().list(filter).await?;
+                if let Some(game) = list.first() {
+                    game.id
+                } else {
+                    return Err(format_err!("no matching game named `{}` found", id));
+                }
+            }
+        };
         let tasks = manifest
             .mods
             .unwrap_or_default()
             .iter()
             .map(move |(_, m)| {
                 let modio2 = modio.clone();
-                let mut filter;
+                let filter;
                 let not_found = match m.id() {
                     Identifier::Id(id) => {
                         filter = Id::eq(id);
@@ -68,41 +61,28 @@ pub fn exec(config: &Config, args: &ArgMatches) -> CliResult {
                 modio
                     .game(game_id)
                     .mods()
-                    .list(&filter)
+                    .list(filter)
                     .map_err(Error::from)
                     .and_then(|mut list| match list.shift() {
-                        Some(mod_) => Ok(mod_),
-                        None => Err(not_found),
+                        Some(mod_) => future::ok(mod_),
+                        None => future::err(not_found),
                     })
                     .and_then(move |mod_| match mod_.modfile {
-                        Some(file) => Either::A(future::ok(file)),
-                        None => Either::B(future::err(format_err!(
-                            "mod `{}` has no primary file",
-                            mod_.name_id
-                        ))),
+                        Some(file) => future::ok(file),
+                        None => {
+                            future::err(format_err!("mod `{}` has no primary file", mod_.name_id))
+                        }
                     })
-                    .and_then(|file| {
-                        let dest = Path::new("");
-                        File::create(dest.join(&file.filename))
-                            .map_err(Error::from)
-                            .join(future::ok(file))
-                    })
-                    .and_then(move |(out, file)| {
+                    .and_then(move |file| {
                         println!("Downloading: {}", file.download.binary_url);
-
-                        let w = ProgressWrapper::new(out, file.filesize);
-                        modio2
-                            .download(file, w)
-                            .map_err(Error::from)
-                            .and_then(|(_n, mut w)| {
-                                w.finish();
-                                Ok(())
-                            })
+                        let out = Path::new(&file.filename).to_path_buf();
+                        modio2.download(file).save_to_file(out).map_err(Error::from)
                     })
             })
             .collect::<Vec<_>>();
-        future::join_all(tasks)
-    });
+        future::try_join_all(tasks).await
+    };
+
     rt.block_on(tasks)?;
 
     Ok(())

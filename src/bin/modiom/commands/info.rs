@@ -1,4 +1,4 @@
-use futures::{future, future::Either, Future};
+use futures::{future, TryFutureExt};
 use prettytable::format;
 use textwrap::fill;
 use tokio::runtime::Runtime;
@@ -32,29 +32,36 @@ pub fn exec(config: &Config, args: &ArgMatches<'_>) -> CliResult {
     let game_id = value_t!(args, "game", u32)?;
     let mod_id = value_t!(args, "mod", u32)?;
 
-    let mut rt = Runtime::new()?;
+    let rt = Runtime::new()?;
     let modio = config.client()?;
 
     let modref = modio.mod_(game_id, mod_id);
 
-    let files = if args.is_present("files") {
-        Either::A(modref.files().list(&Default::default()).map(Some))
-    } else {
-        Either::B(future::ok(None))
+    let files = async {
+        if args.is_present("files") {
+            modref.files().list(Default::default()).map_ok(Some).await
+        } else {
+            Ok(None)
+        }
     };
 
-    let stats = if args.is_present("stats") {
-        Either::A(modref.statistics().map(Some))
-    } else {
-        Either::B(future::ok(None))
+    let modref = modio.mod_(game_id, mod_id);
+
+    let stats = async {
+        if args.is_present("stats") {
+            modref.statistics().map_ok(Some).await
+        } else {
+            Ok(None)
+        }
     };
 
-    let mod_ = modref.get();
+    let modref = modio.mod_(game_id, mod_id);
     let deps = modref.dependencies().list();
-    let task = mod_.join(deps).join(stats.join(files));
+    let mod_ = modref.get();
+    let task = future::try_join4(mod_, deps, stats, files);
 
     match rt.block_on(task) {
-        Ok(((m, deps), (stats, files))) => {
+        Ok((m, deps, stats, files)) => {
             let tags = m
                 .tags
                 .iter()

@@ -1,5 +1,4 @@
 use std::collections::HashSet;
-use std::fs::File;
 use std::path::PathBuf;
 
 use tokio::runtime::Runtime;
@@ -8,7 +7,6 @@ use modio::filter::prelude::*;
 use modiom::config::Config;
 
 use crate::command_prelude::*;
-use crate::progress::ProgressWrapper;
 
 pub fn cli() -> App {
     subcommand("download")
@@ -45,7 +43,7 @@ pub fn exec(config: &Config, args: &ArgMatches<'_>) -> CliResult {
         .map(PathBuf::from)
         .unwrap_or_else(PathBuf::new);
 
-    let mut rt = Runtime::new()?;
+    let rt = Runtime::new()?;
     let modio_ = config.client()?;
 
     let mut missing_mods: HashSet<u32> = HashSet::new();
@@ -53,17 +51,15 @@ pub fn exec(config: &Config, args: &ArgMatches<'_>) -> CliResult {
 
     let filter = Id::_in(mod_ids);
 
-    let list = rt.block_on(modio_.game(game_id).mods().list(&filter));
+    let list = rt.block_on(modio_.game(game_id).mods().list(filter));
 
     if let Ok(mods) = list {
         for m in mods {
             if let Some(file) = m.modfile {
                 println!("Downloading: {}", file.download.binary_url);
 
-                let out = File::create(dest.join(&file.filename))?;
-                let w = ProgressWrapper::new(out, file.filesize);
-                let (_n, mut w) = rt.block_on(modio_.download(file, w))?;
-                w.finish();
+                let out = dest.join(&file.filename);
+                rt.block_on(modio_.download(file).save_to_file(out))?;
             }
             missing_mods.remove(&m.id);
         }

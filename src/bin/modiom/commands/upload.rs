@@ -1,17 +1,18 @@
 use std::path::PathBuf;
 
-use futures::{future, future::Either, Future};
+use futures::{future::try_join3, StreamExt};
 use prettytable::format;
-use tokio::fs::File;
+use tokio::codec::{BytesCodec, FramedRead};
+use tokio::fs::{self, File};
+use tokio::io::BufReader;
 use tokio::runtime::Runtime;
 
 use modio::files::AddFileOptions;
 use modiom::config::Config;
 use modiom::errors::Error;
-use modiom::utils::{self, Md5};
+use modiom::md5::Md5;
 
 use crate::command_prelude::*;
-use crate::progress::ProgressWrapper;
 
 pub fn cli() -> App {
     subcommand("upload")
@@ -53,7 +54,7 @@ pub fn exec(config: &Config, args: &ArgMatches<'_>) -> CliResult {
     let mod_id = value_t!(args, "mod", u32)?;
     let src = value_t!(args, "src", String).map(PathBuf::from)?;
 
-    let mut rt = Runtime::new()?;
+    let rt = Runtime::new()?;
     let modio = config.client()?;
 
     let active = !args.is_present("not-active");
@@ -70,50 +71,46 @@ pub fn exec(config: &Config, args: &ArgMatches<'_>) -> CliResult {
             .ok_or_else::<Error, _>(|| "Failed to get the filename".into())?
     };
 
-    let checksum = if args.is_present("checksum") {
-        Either::A(File::open(src.clone()).and_then(|file| {
-            file.metadata().and_then(|(mut file, metadata)| {
-                let mut out = ProgressWrapper::new(Md5::new(), metadata.len());
-                out.progress.message("calculating checksum: ");
-                utils::copy(&mut file, &mut out)?;
-                out.progress.finish();
-                Ok(Some(format!("{:x}", out.inner())))
-            })
-        }))
-    } else {
-        Either::B(future::ok(None))
+    let checksum = async {
+        if args.is_present("checksum") {
+            let r = File::open(&src).await?;
+            let r = BufReader::with_capacity(512 * 512, r);
+            let r = FramedRead::new(r, BytesCodec::new());
+            let mut md5 = Md5::default();
+            r.forward(&mut md5).await?;
+
+            Ok(Some(md5.to_lower_hex()))
+        } else {
+            Ok(None)
+        }
     };
 
-    let upload = File::open(src.clone())
-        .and_then(|file| file.metadata())
-        .join(checksum)
-        .map_err(Error::from)
-        .and_then(move |((file, md), checksum)| {
-            let mut file = ProgressWrapper::new(file, md.len());
-            file.progress.message("uploading: ");
-            let mut opts = AddFileOptions::with_read(file, filename);
+    let upload = async {
+        let file = File::open(&src);
+        let md = fs::metadata(&src);
 
-            opts = opts.active(active);
+        let (file, _md, checksum) = try_join3(file, md, checksum).await?;
+        let mut opts = AddFileOptions::with_read(file, filename);
 
-            if let Ok(version) = version {
-                opts = opts.version(version);
-            }
-            if let Ok(changelog) = changelog {
-                opts = opts.changelog(changelog);
-            }
-            if let Ok(metadata) = metadata {
-                opts = opts.metadata_blob(metadata);
-            }
-            if let Some(checksum) = checksum {
-                opts = opts.filehash(checksum);
-            }
+        opts = opts.active(active);
 
-            modio
-                .mod_(game_id, mod_id)
-                .files()
-                .add(opts)
-                .map_err(Error::from)
-        });
+        if let Ok(version) = version {
+            opts = opts.version(version);
+        }
+        if let Ok(changelog) = changelog {
+            opts = opts.changelog(changelog);
+        }
+        if let Ok(metadata) = metadata {
+            opts = opts.metadata_blob(metadata);
+        }
+        if let Some(checksum) = checksum {
+            opts = opts.filehash(checksum);
+        }
+
+        let file = modio.mod_(game_id, mod_id).files().add(opts).await?;
+
+        Ok::<_, Error>(file)
+    };
 
     match rt.block_on(upload) {
         Ok(file) => {

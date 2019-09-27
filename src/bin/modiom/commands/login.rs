@@ -16,7 +16,7 @@ pub fn cli() -> App {
 
 pub fn exec(config: &Config, args: &ArgMatches<'_>) -> CliResult {
     let token = match args.value_of("token") {
-        Some(token) => Credentials::Token(token.to_string()),
+        Some(token) => Credentials::Token(token.to_string(), None),
         None => {
             let url = if args.is_test_env() {
                 "https://test.mod.io/apikey"
@@ -28,7 +28,7 @@ pub fn exec(config: &Config, args: &ArgMatches<'_>) -> CliResult {
             let api_key = prompt("Enter api key: ")?;
             let email = prompt("Enter email: ")?;
 
-            let mut rt = Runtime::new()?;
+            let rt = Runtime::new()?;
             let m = Modio::host(config.host(), Credentials::ApiKey(api_key))?;
 
             rt.block_on(m.auth().request_code(&email))?;

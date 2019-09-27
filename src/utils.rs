@@ -1,11 +1,7 @@
-use std::fmt;
 use std::fs;
 use std::io;
 use std::io::prelude::*;
 use std::path::{Path, PathBuf};
-
-use md5::{self, Digest};
-use tokio::prelude::*;
 
 use crate::errors::ModiomResult;
 
@@ -47,47 +43,5 @@ where
         };
         writer.write_all(&buf[..len])?;
         written += len as u64;
-    }
-}
-
-pub struct Md5 {
-    digest: md5::Md5,
-}
-
-impl Md5 {
-    pub fn new() -> Self {
-        Self {
-            digest: md5::Md5::default(),
-        }
-    }
-}
-
-impl Write for Md5 {
-    fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
-        self.digest.write(buf)
-    }
-
-    fn flush(&mut self) -> io::Result<()> {
-        self.digest.flush()
-    }
-}
-
-impl AsyncWrite for Md5 {
-    fn shutdown(&mut self) -> Poll<(), io::Error> {
-        Ok(().into())
-    }
-}
-
-impl fmt::LowerHex for Md5 {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let result = self.digest.clone().result();
-        fmt::LowerHex::fmt(&result, f)
-    }
-}
-
-impl fmt::UpperHex for Md5 {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let result = self.digest.clone().result();
-        fmt::UpperHex::fmt(&result, f)
     }
 }

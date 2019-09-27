@@ -70,7 +70,7 @@ impl Config {
                 Ok(self.get_string("auth.token")?)
             }
         })()
-        .map(|t| t.map(|t| Credentials::Token(t)))
+        .map(|t| t.map(|t| Credentials::Token(t, None)))
         .map_err(format_err!(map "failed to read authentication token"))
     }
 
