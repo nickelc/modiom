@@ -55,7 +55,7 @@ pub fn exec(config: &Config, args: &ArgMatches<'_>) -> CliResult {
     let src = value_t!(args, "src", String).map(PathBuf::from)?;
 
     let rt = Runtime::new()?;
-    let modio = config.client()?;
+    let modio = client(config)?;
 
     let active = !args.is_present("not-active");
     let version = value_t!(args, "version", String);

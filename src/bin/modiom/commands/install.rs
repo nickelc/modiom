@@ -26,7 +26,7 @@ pub fn exec(config: &Config, args: &ArgMatches) -> CliResult {
     }
 
     let rt = Runtime::new()?;
-    let modio = config.client()?;
+    let modio = client(config)?;
 
     let tasks = async {
         let game_id = match manifest.game.id {

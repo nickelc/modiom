@@ -44,7 +44,7 @@ pub fn exec(config: &Config, args: &ArgMatches<'_>) -> CliResult {
         .unwrap_or_else(PathBuf::new);
 
     let rt = Runtime::new()?;
-    let modio_ = config.client()?;
+    let modio_ = client(config)?;
 
     let mut missing_mods: HashSet<u32> = HashSet::new();
     missing_mods.extend(&mod_ids);

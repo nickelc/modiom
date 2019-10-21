@@ -12,6 +12,18 @@ pub use prettytable::{cell, row, table};
 
 pub type App = clap::App<'static, 'static>;
 
+pub fn client(config: &Config) -> ModiomResult<modio::Modio> {
+    let token = config
+        .auth_token()?
+        .ok_or_else(|| "authentication token required")?;
+
+    modio::Modio::builder(token)
+        .host(config.host())
+        .agent("modiom")
+        .build()
+        .map_err(Error::from)
+}
+
 pub fn opt(name: &'static str, help: &'static str) -> Arg<'static, 'static> {
     Arg::with_name(name).long(name).help(help)
 }
