@@ -82,12 +82,19 @@ pub enum ModDependency {
 impl ModDependency {
     pub fn id(&self) -> &Identifier {
         match *self {
-            ModDependency::Simple(ref id) => &id,
+            ModDependency::Simple(ref id) => id,
             ModDependency::Detailed(ref mod_) => &mod_.id,
         }
     }
 
-    pub fn version(&self) -> Option<&Identifier> {
+    pub fn file(&self) -> Option<u32> {
+        match *self {
+            ModDependency::Simple(_) => None,
+            ModDependency::Detailed(ref m) => m.file,
+        }
+    }
+
+    pub fn version(&self) -> Option<&String> {
         match *self {
             ModDependency::Simple(_) => None,
             ModDependency::Detailed(ref mod_) => mod_.version.as_ref(),
@@ -150,7 +157,8 @@ impl<'de> Deserialize<'de> for ModDependency {
 pub struct DetailedModDependency {
     pub id: Identifier,
     pub with_dependencies: Option<bool>,
-    pub version: Option<Identifier>,
+    pub file: Option<u32>,
+    pub version: Option<String>,
 }
 
 pub fn read(path: &Path) -> ModiomResult<ModioManifest> {
@@ -194,6 +202,7 @@ mod tests {
         let mod3 = ModDependency::Detailed(DetailedModDependency {
             id: Identifier::Id(3),
             with_dependencies: Some(true),
+            file: None,
             version: None,
         });
         let mut expected = ModDependencies::new();
@@ -236,17 +245,20 @@ mod tests {
         let mod3 = ModDependency::Detailed(DetailedModDependency {
             id: Identifier::Id(3),
             with_dependencies: Some(true),
+            file: None,
             version: None,
         });
         let mod4 = ModDependency::Detailed(DetailedModDependency {
             id: Identifier::NameId("mod4".to_string()),
             with_dependencies: None,
+            file: None,
             version: None,
         });
         let mod5 = ModDependency::Detailed(DetailedModDependency {
             id: Identifier::NameId("mod5".to_string()),
             with_dependencies: None,
-            version: Some(Identifier::NameId("1.2".to_string())),
+            file: None,
+            version: Some("1.2".to_string()),
         });
         let mut mods = ModDependencies::new();
         mods.insert("mod1".to_string(), mod1);

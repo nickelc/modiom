@@ -52,15 +52,24 @@ with-dependencies = true
 This field specifies whether dependencies of the mod are downloaded and overrides the global setting.
 If you don't specify the field, it will default to `false`.
 
+#### The `file` field (optional)
+
+This field specifies the downloaded file id.
+
+```toml
+[mods.mod1]
+id = "mod-one"
+file = 34
+```
+
 #### The `version` field (optional)
 
-This field specifies the downloaded version or the file id.
+This field specifies the downloaded version.
 
 ```toml
 [mods.mod1]
 id = "mod-one"
 version = "1.2"
-# version = 34
 ```
 
 ## Building
