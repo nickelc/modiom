@@ -1,4 +1,5 @@
 use std::fs;
+use std::io;
 use std::path::PathBuf;
 
 use clap::{self, SubCommand};
@@ -97,7 +98,7 @@ pub trait ArgMatchesExt {
         self._value_of(name).map(PathBuf::from)
     }
 
-    fn root_manifest(&self, config: &Config) -> ModiomResult<PathBuf>;
+    fn root_manifest(&self, config: &Config) -> io::Result<PathBuf>;
 }
 
 impl<'a> ArgMatchesExt for ArgMatches<'a> {
@@ -109,18 +110,19 @@ impl<'a> ArgMatchesExt for ArgMatches<'a> {
         self.value_of(name)
     }
 
-    fn root_manifest(&self, config: &Config) -> ModiomResult<PathBuf> {
+    fn root_manifest(&self, config: &Config) -> io::Result<PathBuf> {
         if let Some(path) = self.value_of_path("manifest-path") {
             if !path.ends_with("Modio.toml") {
-                return Err(Error::Message(
-                    "the manifest-path must be a path to a Modio.toml file".into(),
+                return Err(io::Error::new(
+                    io::ErrorKind::InvalidInput,
+                    "the manifest-path must be a path to a Modio.toml file",
                 ));
             }
             if fs::metadata(&path).is_err() {
-                return Err(Error::Message(format!(
-                    "manifest-path `{}` does not exist",
-                    path.display(),
-                )));
+                return Err(io::Error::new(
+                    io::ErrorKind::NotFound,
+                    format!("manifest-path `{}` does not exist", path.display()),
+                ));
             }
             return Ok(path);
         }

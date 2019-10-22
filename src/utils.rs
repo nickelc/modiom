@@ -3,28 +3,28 @@ use std::io;
 use std::io::prelude::*;
 use std::path::{Path, PathBuf};
 
-use crate::errors::ModiomResult;
-
-pub fn find_manifest_for_wd(cwd: &Path) -> ModiomResult<PathBuf> {
+pub fn find_manifest_for_wd(cwd: &Path) -> io::Result<PathBuf> {
     let file = "Modio.toml";
     cwd.ancestors()
         .map(|p| p.join(file))
         .find(|p| fs::metadata(p).is_ok())
-        .ok_or_else(format_err!(
-            ok "Could not find `{}` in `{}` or any parent directory",
-            file,
-            cwd.display()
-        ))
+        .ok_or_else(|| {
+            io::Error::new(
+                io::ErrorKind::NotFound,
+                format!(
+                    "Could not find `{}` in `{}` or any parent directory",
+                    file,
+                    cwd.display()
+                ),
+            )
+        })
 }
 
-pub fn read(path: &Path) -> ModiomResult<String> {
-    (|| -> ModiomResult<_> {
-        let mut ret = String::new();
-        let mut f = fs::File::open(path)?;
-        f.read_to_string(&mut ret)?;
-        Ok(ret)
-    })()
-    .map_err(format_err!(map "failed to read `{}`", path.display()))
+pub fn read(path: &Path) -> io::Result<String> {
+    let mut ret = String::new();
+    let mut f = fs::File::open(path)?;
+    f.read_to_string(&mut ret)?;
+    Ok(ret)
 }
 
 pub fn copy<R: ?Sized, W: ?Sized>(reader: &mut R, writer: &mut W) -> io::Result<u64>

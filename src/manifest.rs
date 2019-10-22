@@ -162,7 +162,9 @@ pub struct DetailedModDependency {
 }
 
 pub fn read(path: &Path) -> ModiomResult<ModioManifest> {
-    utils::read(&path).and_then(|content| parse(&content, &path))
+    utils::read(&path)
+        .map_err(crate::errors::Error::from)
+        .and_then(|content| parse(&content, &path))
 }
 
 pub fn parse(content: &str, path: &Path) -> ModiomResult<ModioManifest> {
