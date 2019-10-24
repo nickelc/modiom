@@ -2,15 +2,10 @@ use std::path::Path;
 
 use futures::{future, TryFutureExt};
 use modio::filter::prelude::*;
-use modiom::errors::Error;
 use modiom::manifest::{self, Identifier};
 use tokio::runtime::Runtime;
 
 use crate::command_prelude::*;
-
-macro_rules! format_err {
-    ($($arg:tt)*) => { Error::Message(format!($($arg)*)) };
-}
 
 pub fn cli() -> App {
     subcommand("install").arg_manifest_path()
@@ -37,7 +32,7 @@ pub fn exec(config: &Config, args: &ArgMatches) -> CliResult {
                 if let Some(game) = list.first() {
                     game.id
                 } else {
-                    return Err(format_err!("no matching game named `{}` found", id));
+                    return Err(format!("no matching game named `{}` found", id).into());
                 }
             }
         };
@@ -48,35 +43,35 @@ pub fn exec(config: &Config, args: &ArgMatches) -> CliResult {
             .map(move |(_, m)| {
                 let modio2 = modio.clone();
                 let filter;
-                let not_found = match m.id() {
+                let not_found: Box<dyn std::error::Error> = match m.id() {
                     Identifier::Id(id) => {
                         filter = Id::eq(id);
-                        format_err!("mod with id `{}` not found", id)
+                        format!("mod with id `{}` not found", id).into()
                     }
                     Identifier::NameId(id) => {
                         filter = NameId::eq(id);
-                        format_err!("mod with name-id `{}` not found", id)
+                        format!("mod with name-id `{}` not found", id).into()
                     }
                 };
                 modio
                     .game(game_id)
                     .mods()
                     .list(filter)
-                    .map_err(Error::from)
+                    .map_err(Into::into)
                     .and_then(|mut list| match list.shift() {
                         Some(mod_) => future::ok(mod_),
                         None => future::err(not_found),
                     })
                     .and_then(move |mod_| match mod_.modfile {
                         Some(file) => future::ok(file),
-                        None => {
-                            future::err(format_err!("mod `{}` has no primary file", mod_.name_id))
-                        }
+                        None => future::err(
+                            format!("mod `{}` has no primary file", mod_.name_id).into(),
+                        ),
                     })
                     .and_then(move |file| {
                         println!("Downloading: {}", file.download.binary_url);
                         let out = Path::new(&file.filename).to_path_buf();
-                        modio2.download(file).save_to_file(out).map_err(Error::from)
+                        modio2.download(file).save_to_file(out).map_err(Into::into)
                     })
             })
             .collect::<Vec<_>>();

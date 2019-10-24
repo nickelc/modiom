@@ -9,7 +9,6 @@ use tokio::runtime::Runtime;
 
 use modio::files::AddFileOptions;
 use modiom::config::Config;
-use modiom::errors::Error;
 use modiom::md5::Md5;
 
 use crate::command_prelude::*;
@@ -68,7 +67,7 @@ pub fn exec(config: &Config, args: &ArgMatches<'_>) -> CliResult {
         src.file_name()
             .and_then(|n| n.to_str())
             .map(|n| n.to_string())
-            .ok_or_else::<Error, _>(|| "Failed to get the filename".into())?
+            .ok_or_else(|| "Failed to get the filename")?
     };
 
     let checksum = async {
@@ -109,7 +108,7 @@ pub fn exec(config: &Config, args: &ArgMatches<'_>) -> CliResult {
 
         let file = modio.mod_(game_id, mod_id).files().add(opts).await?;
 
-        Ok::<_, Error>(file)
+        Ok::<_, Box<dyn std::error::Error>>(file)
     };
 
     match rt.block_on(upload) {

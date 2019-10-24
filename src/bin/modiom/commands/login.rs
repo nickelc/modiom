@@ -6,7 +6,6 @@ use modio::Modio;
 use tokio::runtime::Runtime;
 
 use modiom::config::Config;
-use modiom::errors::ModiomResult;
 
 use crate::command_prelude::*;
 
@@ -54,7 +53,7 @@ pub fn exec(config: &Config, args: &ArgMatches<'_>) -> CliResult {
     Ok(())
 }
 
-fn prompt(prompt: &str) -> ModiomResult<String> {
+fn prompt(prompt: &str) -> io::Result<String> {
     print!("{}", prompt);
     io::stdout().flush()?;
     let mut buf = String::new();

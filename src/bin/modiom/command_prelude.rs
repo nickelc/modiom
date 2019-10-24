@@ -1,28 +1,30 @@
 use std::fs;
 use std::io;
 use std::path::PathBuf;
+use std::result::Result as StdResult;
 
 use clap::{self, SubCommand};
 
 pub use clap::{value_t, values_t};
 pub use clap::{AppSettings, Arg, ArgGroup, ArgMatches};
 pub use modiom::config::Config;
-pub use modiom::errors::{CliResult, Error, ModiomResult};
-use modiom::utils::find_manifest_for_wd;
+pub use modiom::{CliResult, Result};
 pub use prettytable::{cell, row, table};
+
+use modiom::utils::find_manifest_for_wd;
 
 pub type App = clap::App<'static, 'static>;
 
-pub fn client(config: &Config) -> ModiomResult<modio::Modio> {
+pub fn client(config: &Config) -> Result<modio::Modio> {
     let token = config
         .auth_token()?
         .ok_or_else(|| "authentication token required")?;
 
-    modio::Modio::builder(token)
+    let client = modio::Modio::builder(token)
         .host(config.host())
         .agent("modiom")
-        .build()
-        .map_err(Error::from)
+        .build()?;
+    Ok(client)
 }
 
 pub fn opt(name: &'static str, help: &'static str) -> Arg<'static, 'static> {
@@ -39,7 +41,7 @@ pub fn subcommand(name: &'static str) -> App {
 
 #[allow(dead_code)]
 #[allow(clippy::needless_pass_by_value)]
-pub fn validate_is_file(value: String) -> Result<(), String> {
+pub fn validate_is_file(value: String) -> StdResult<(), String> {
     if !PathBuf::from(value).is_file() {
         return Err(String::from("Path is not a file."));
     }
@@ -48,7 +50,7 @@ pub fn validate_is_file(value: String) -> Result<(), String> {
 
 #[allow(dead_code)]
 #[allow(clippy::needless_pass_by_value)]
-pub fn validate_path_exists(value: String) -> Result<(), String> {
+pub fn validate_path_exists(value: String) -> StdResult<(), String> {
     if !PathBuf::from(value).exists() {
         return Err(String::from("Path does not exist."));
     }
@@ -56,7 +58,7 @@ pub fn validate_path_exists(value: String) -> Result<(), String> {
 }
 
 #[allow(clippy::needless_pass_by_value)]
-pub fn validate_is_zip(value: String) -> Result<(), String> {
+pub fn validate_is_zip(value: String) -> StdResult<(), String> {
     if !PathBuf::from(&value).is_file() && value.ends_with(".zip") {
         return Err(String::from("File is not a zip."));
     }
@@ -64,7 +66,7 @@ pub fn validate_is_zip(value: String) -> Result<(), String> {
 }
 
 #[allow(clippy::needless_pass_by_value)]
-pub fn validate_u32(value: String) -> Result<(), String> {
+pub fn validate_u32(value: String) -> StdResult<(), String> {
     match value.parse::<u32>() {
         Ok(_) => Ok(()),
         Err(e) => Err(format!("{}", e)),

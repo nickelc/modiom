@@ -1,5 +1,5 @@
 use modiom::config::Config;
-use modiom::errors::CliResult;
+use modiom::CliResult;
 
 mod command_prelude;
 mod commands;

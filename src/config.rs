@@ -13,7 +13,7 @@ use toml::Value;
 
 use modio::auth::Credentials;
 
-use crate::errors::{Error, ModiomResult};
+use crate::Result;
 
 #[derive(Debug)]
 pub struct Config {
@@ -33,14 +33,13 @@ impl Config {
         }
     }
 
-    pub fn default() -> ModiomResult<Config> {
+    pub fn default() -> Result<Config> {
         let cwd = env::current_dir()?;
-        let homedir =
-            home_dir().ok_or_else(|| format_err!("Couldn't find your home directory."))?;
+        let homedir = home_dir().ok_or_else(|| "Couldn't find your home directory.")?;
         Ok(Config::new(cwd, homedir.join(".modio")))
     }
 
-    pub fn configure(&mut self, test_env: bool) -> ModiomResult<()> {
+    pub fn configure(&mut self, test_env: bool) -> Result<()> {
         self.test_env = test_env;
         Ok(())
     }
@@ -61,23 +60,20 @@ impl Config {
         }
     }
 
-    pub fn auth_token(&self) -> ModiomResult<Option<Credentials>> {
-        (|| -> ModiomResult<_> {
-            if self.test_env {
-                Ok(self.get_string("auth.test.token")?)
-            } else {
-                Ok(self.get_string("auth.token")?)
-            }
-        })()
-        .map(|t| t.map(|t| Credentials::Token(t, None)))
-        .map_err(format_err!(map "failed to read authentication token"))
+    pub fn auth_token(&self) -> Result<Option<Credentials>> {
+        let token = if self.test_env {
+            self.get_string("auth.test.token")?
+        } else {
+            self.get_string("auth.token")?
+        };
+        Ok(token.map(|t| Credentials::Token(t, None)))
     }
 
-    fn cfg(&self) -> ModiomResult<&Cfg> {
+    fn cfg(&self) -> Result<&Cfg> {
         self.inner.try_borrow_with(|| self.load_config())
     }
 
-    fn load_config(&self) -> ModiomResult<Cfg> {
+    fn load_config(&self) -> Result<Cfg> {
         let mut cfg = Cfg::new();
         let credentials: File<_> = self.home_dir.join("credentials").into();
         cfg.merge(credentials.format(FileFormat::Toml).required(true))?;
@@ -85,7 +81,7 @@ impl Config {
         Ok(cfg)
     }
 
-    pub fn get_string(&self, key: &str) -> ModiomResult<Option<String>> {
+    pub fn get_string(&self, key: &str) -> Result<Option<String>> {
         match self.cfg()?.get_str(key) {
             Ok(v) => Ok(Some(v)),
             Err(ConfigError::NotFound(_)) => Ok(None),
@@ -93,7 +89,7 @@ impl Config {
         }
     }
 
-    pub fn save_credentials(&self, token: String) -> ModiomResult<()> {
+    pub fn save_credentials(&self, token: String) -> Result<()> {
         fs::create_dir_all(&self.home_dir)?;
         let mut file = fs::OpenOptions::new()
             .read(true)
@@ -106,7 +102,7 @@ impl Config {
 
         let mut toml: Value = contents
             .parse()
-            .map_err(|e| Error::from(format!("Failed to load credentials: {}", e)))?;
+            .map_err(|e| format!("Failed to load credentials: {}", e))?;
 
         let (key, value) = if self.test_env {
             let mut table = Table::new();
@@ -117,9 +113,7 @@ impl Config {
         };
 
         if let Some(table) = toml.as_table_mut() {
-            let auth = table
-                .entry("auth")
-                .or_insert_with(|| Table::new().into());
+            let auth = table.entry("auth").or_insert_with(|| Table::new().into());
 
             // Make sure an existing value is a table
             if !auth.is_table() {

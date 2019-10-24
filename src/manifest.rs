@@ -4,7 +4,6 @@ use std::path::Path;
 
 use serde::de::{self, Deserialize};
 
-use crate::errors::ModiomResult;
 use crate::utils;
 
 pub type ModDependencies = BTreeMap<String, ModDependency>;
@@ -161,15 +160,15 @@ pub struct DetailedModDependency {
     pub version: Option<String>,
 }
 
-pub fn read(path: &Path) -> ModiomResult<ModioManifest> {
-    utils::read(&path)
-        .map_err(crate::errors::Error::from)
-        .and_then(|content| parse(&content, &path))
+pub fn read(path: &Path) -> Result<ModioManifest, Box<dyn std::error::Error>> {
+    let content = utils::read(&path)?;
+    parse(&content, &path)
 }
 
-pub fn parse(content: &str, path: &Path) -> ModiomResult<ModioManifest> {
-    toml::from_str(&content)
-        .map_err(format_err!(map "failed to parse manifest at `{}`", path.display()))
+pub fn parse(content: &str, path: &Path) -> Result<ModioManifest, Box<dyn std::error::Error>> {
+    let manifest = toml::from_str(&content)
+        .map_err(|_| format!("failed to parse manifest at `{}`", path.display()))?;
+    Ok(manifest)
 }
 
 #[cfg(test)]
