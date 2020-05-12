@@ -32,14 +32,15 @@ pub fn exec(config: &Config, args: &ArgMatches<'_>) -> CliResult {
     let game_id = value_t!(args, "game", u32)?;
     let mod_id = value_t!(args, "mod", u32)?;
 
-    let rt = Runtime::new()?;
+    let mut rt = Runtime::new()?;
     let modio = client(config)?;
 
     let modref = modio.mod_(game_id, mod_id);
 
     let files = async {
         if args.is_present("files") {
-            modref.files().list(Default::default()).map_ok(Some).await
+            let f = Default::default();
+            modref.files().search(f).first_page().map_ok(Some).await
         } else {
             Ok(None)
         }

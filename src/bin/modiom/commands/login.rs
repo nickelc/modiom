@@ -15,7 +15,8 @@ pub fn cli() -> App {
 
 pub fn exec(config: &Config, args: &ArgMatches<'_>) -> CliResult {
     let token = match args.value_of("token") {
-        Some(token) => Credentials::Token(token.to_string(), None),
+        // FIXME
+        Some(token) => Credentials::with_token("FIXME", token),
         None => {
             let url = if args.is_test_env() {
                 "https://test.mod.io/apikey"
@@ -27,8 +28,8 @@ pub fn exec(config: &Config, args: &ArgMatches<'_>) -> CliResult {
             let api_key = prompt("Enter api key: ")?;
             let email = prompt("Enter email: ")?;
 
-            let rt = Runtime::new()?;
-            let m = Modio::host(config.host(), Credentials::ApiKey(api_key))?;
+            let mut rt = Runtime::new()?;
+            let m = Modio::host(config.host(), Credentials::new(api_key))?;
 
             rt.block_on(m.auth().request_code(&email))?;
             println!("Authentication code request was successful.");
@@ -49,7 +50,8 @@ pub fn exec(config: &Config, args: &ArgMatches<'_>) -> CliResult {
         }
     }
 
-    config.save_credentials(token.to_string())?;
+    // FIXME
+    config.save_credentials(token.token.unwrap().value)?;
     Ok(())
 }
 

@@ -2,10 +2,10 @@ use std::path::PathBuf;
 
 use futures::{future::try_join3, StreamExt};
 use prettytable::format;
-use tokio::codec::{BytesCodec, FramedRead};
 use tokio::fs::{self, File};
 use tokio::io::BufReader;
 use tokio::runtime::Runtime;
+use tokio_util::codec::{BytesCodec, FramedRead};
 
 use modio::files::AddFileOptions;
 use modiom::config::Config;
@@ -53,7 +53,7 @@ pub fn exec(config: &Config, args: &ArgMatches<'_>) -> CliResult {
     let mod_id = value_t!(args, "mod", u32)?;
     let src = value_t!(args, "src", String).map(PathBuf::from)?;
 
-    let rt = Runtime::new()?;
+    let mut rt = Runtime::new()?;
     let modio = client(config)?;
 
     let active = !args.is_present("not-active");

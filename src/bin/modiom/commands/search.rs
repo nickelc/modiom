@@ -61,7 +61,7 @@ pub fn exec(config: &Config, args: &ArgMatches<'_>) -> CliResult {
     filter.set_format(*format::consts::FORMAT_CLEAN);
     filter.set_titles(row![b -> "Filter"]);
 
-    let rt = Runtime::new()?;
+    let mut rt = Runtime::new()?;
     let m = client(config)?;
 
     if let Ok(game_id) = game_id {
@@ -79,7 +79,7 @@ pub fn exec(config: &Config, args: &ArgMatches<'_>) -> CliResult {
             println!();
         }
 
-        let list = rt.block_on(m.game(game_id).mods().list(f));
+        let list = rt.block_on(m.game(game_id).mods().search(f).first_page());
         if let Ok(list) = list {
             let mut output = Table::new();
             output.set_format(*format::consts::FORMAT_CLEAN);
@@ -111,7 +111,7 @@ pub fn exec(config: &Config, args: &ArgMatches<'_>) -> CliResult {
             println!();
         }
 
-        let list = rt.block_on(m.games().list(f));
+        let list = rt.block_on(m.games().search(f).first_page());
         if let Ok(list) = list {
             let mut output = Table::new();
             output.set_format(*format::consts::FORMAT_CLEAN);

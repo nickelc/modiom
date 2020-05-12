@@ -61,12 +61,22 @@ impl Config {
     }
 
     pub fn auth_token(&self) -> Result<Option<Credentials>> {
-        let token = if self.test_env {
-            self.get_string("auth.test.token")?
+        let (api_key, token) = if self.test_env {
+            (
+                self.get_string("auth.test.api_key")?,
+                self.get_string("auth.test.token")?,
+            )
         } else {
-            self.get_string("auth.token")?
+            (
+                self.get_string("auth.token")?,
+                self.get_string("auth.token")?,
+            )
         };
-        Ok(token.map(|t| Credentials::Token(t, None)))
+        let token = token.map(|t| modio::auth::Token {
+            value: t,
+            expired_at: None,
+        });
+        Ok(api_key.map(|api_key| Credentials { api_key, token }))
     }
 
     fn cfg(&self) -> Result<&Cfg> {

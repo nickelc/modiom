@@ -43,7 +43,7 @@ pub fn exec(config: &Config, args: &ArgMatches<'_>) -> CliResult {
         .map(PathBuf::from)
         .unwrap_or_else(PathBuf::new);
 
-    let rt = Runtime::new()?;
+    let mut rt = Runtime::new()?;
     let modio_ = client(config)?;
 
     let mut missing_mods: HashSet<u32> = HashSet::new();
@@ -51,7 +51,7 @@ pub fn exec(config: &Config, args: &ArgMatches<'_>) -> CliResult {
 
     let filter = Id::_in(mod_ids);
 
-    let list = rt.block_on(modio_.game(game_id).mods().list(filter));
+    let list = rt.block_on(modio_.game(game_id).mods().search(filter).first_page());
 
     if let Ok(mods) = list {
         for m in mods {

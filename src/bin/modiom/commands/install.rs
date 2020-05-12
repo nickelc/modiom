@@ -1,6 +1,7 @@
 use std::path::Path;
 
 use futures::{future, TryFutureExt};
+use futures::{stream, TryStreamExt};
 use modio::filter::prelude::*;
 use modiom::manifest::{self, Identifier};
 use tokio::runtime::Runtime;
@@ -20,7 +21,7 @@ pub fn exec(config: &Config, args: &ArgMatches) -> CliResult {
         _ => return Err("no mods defined".into()),
     }
 
-    let rt = Runtime::new()?;
+    let mut rt = Runtime::new()?;
     let modio = client(config)?;
 
     let tasks = async {
@@ -28,8 +29,8 @@ pub fn exec(config: &Config, args: &ArgMatches) -> CliResult {
             Identifier::Id(id) => id,
             Identifier::NameId(ref id) => {
                 let filter = NameId::eq(id);
-                let list = modio.games().list(filter).await?;
-                if let Some(game) = list.first() {
+                let first = modio.games().search(filter).first().await?;
+                if let Some(game) = first {
                     game.id
                 } else {
                     return Err(format!("no matching game named `{}` found", id).into());
@@ -56,11 +57,12 @@ pub fn exec(config: &Config, args: &ArgMatches) -> CliResult {
                 modio
                     .game(game_id)
                     .mods()
-                    .list(filter)
+                    .search(filter)
+                    .first_page()
                     .map_err(Into::into)
-                    .and_then(|mut list| match list.shift() {
-                        Some(mod_) => future::ok(mod_),
-                        None => future::err(not_found),
+                    .and_then(|mut list| match list.is_empty() {
+                        false => future::ok(list.remove(0)),
+                        true => future::err(not_found),
                     })
                     .and_then(move |mod_| match mod_.modfile {
                         Some(file) => future::ok(file),
@@ -74,8 +76,9 @@ pub fn exec(config: &Config, args: &ArgMatches) -> CliResult {
                         modio2.download(file).save_to_file(out).map_err(Into::into)
                     })
             })
-            .collect::<Vec<_>>();
-        future::try_join_all(tasks).await
+            .collect::<stream::FuturesUnordered<_>>();
+
+        tasks.try_collect::<Vec<_>>().await
     };
 
     rt.block_on(tasks)?;
