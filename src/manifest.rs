@@ -2,7 +2,8 @@ use std::collections::BTreeMap;
 use std::fmt;
 use std::path::Path;
 
-use serde::de::{self, Deserialize};
+use serde::de;
+use serde::{Deserialize, Serialize};
 
 use crate::utils;
 
@@ -102,14 +103,14 @@ impl ModDependency {
 }
 
 // {{{ impl Deserialize for ModDependency
-impl<'de> Deserialize<'de> for ModDependency {
+impl<'de> serde::de::Deserialize<'de> for ModDependency {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
-        D: de::Deserializer<'de>,
+        D: serde::de::Deserializer<'de>,
     {
         struct Visitor;
 
-        impl<'de> de::Visitor<'de> for Visitor {
+        impl<'de> serde::de::Visitor<'de> for Visitor {
             type Value = ModDependency;
 
             fn expecting(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -118,30 +119,30 @@ impl<'de> Deserialize<'de> for ModDependency {
 
             fn visit_str<E>(self, s: &str) -> Result<Self::Value, E>
             where
-                E: de::Error,
+                E: serde::de::Error,
             {
                 Ok(ModDependency::Simple(Identifier::NameId(s.to_string())))
             }
 
             fn visit_i64<E>(self, u: i64) -> Result<Self::Value, E>
             where
-                E: de::Error,
+                E: serde::de::Error,
             {
                 Ok(ModDependency::Simple(Identifier::Id(u as u32)))
             }
 
             fn visit_u64<E>(self, u: u64) -> Result<Self::Value, E>
             where
-                E: de::Error,
+                E: serde::de::Error,
             {
                 Ok(ModDependency::Simple(Identifier::Id(u as u32)))
             }
 
             fn visit_map<V>(self, map: V) -> Result<Self::Value, V::Error>
             where
-                V: de::MapAccess<'de>,
+                V: serde::de::MapAccess<'de>,
             {
-                let mvd = de::value::MapAccessDeserializer::new(map);
+                let mvd = serde::de::value::MapAccessDeserializer::new(map);
                 DetailedModDependency::deserialize(mvd).map(ModDependency::Detailed)
             }
         }

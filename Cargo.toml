@@ -22,8 +22,7 @@ lazycell = "1"
 md-5 = "0.8"
 nom = "5"
 pbr = "1"
-serde = "1"
-serde_derive = "1"
+serde = { version = "1", features = ["derive"] }
 textwrap = "0.11"
 tokio = "0.2"
 tokio-util = { version = "0.3", features = ["codec"] }
