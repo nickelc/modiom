@@ -1,0 +1,70 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  style:
+    name: Style
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Install rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          components: rustfmt
+          profile: minimal
+          override: true
+
+      - name: cargo fmt -- --check
+        uses: actions-rs/cargo@v1
+        with:
+          command: fmt
+          args: -- --check
+
+  build:
+    name: Build
+    needs: [style]
+
+    runs-on: ${{ matrix.os || 'ubuntu-latest' }}
+
+    strategy:
+      matrix:
+        name:
+          - linux / stable
+          - linux / beta
+          - linux / nightly
+          - windows
+          - macOS
+  
+        include:
+          - name: linux / beta
+            rust: beta
+
+          - name: linux / nightly
+            rust: nightly
+
+          - name: windows
+            os: windows-latest
+
+          - name: macOS
+            os: macOS-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Install rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ matrix.rust || 'stable' }}
+          profile: minimal
+          override: true
+
+      - name: Test
+        uses: actions-rs/cargo@v1
+        with:
+          command: test
