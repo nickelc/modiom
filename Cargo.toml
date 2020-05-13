@@ -30,6 +30,8 @@ toml = "0.5"
 [dependencies.modio]
 version = "0.4"
 git = "https://github.com/nickelc/modio-rs.git"
+default-features = false
+features = ["rustls-tls"]
 
 [dependencies.prettytable-rs]
 version = "0.8"
