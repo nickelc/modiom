@@ -10,22 +10,31 @@ use modiom::config::Config;
 use crate::command_prelude::*;
 
 pub fn cli() -> App {
-    subcommand("login").arg(Arg::with_name("token"))
+    subcommand("login")
+        .arg(Arg::with_name("api-key"))
+        .arg(Arg::with_name("token"))
 }
 
 pub fn exec(config: &Config, args: &ArgMatches<'_>) -> CliResult {
-    let token = match args.value_of("token") {
-        // FIXME
-        Some(token) => Credentials::with_token("FIXME", token),
-        None => {
-            let url = if args.is_test_env() {
-                "https://test.mod.io/apikey"
-            } else {
-                "https://mod.io/apikey"
-            };
-            println!("Please visit {} and paste the API key below", url);
+    let api_key = args.value_of("api-key");
+    let token = args.value_of("token");
 
-            let api_key = prompt("Enter api key: ")?;
+    let token = match (api_key, token) {
+        (Some(api_key), Some(token)) => Credentials::with_token(api_key, token),
+        (api_key, _) => {
+            let api_key = match api_key {
+                Some(api_key) => api_key.into(),
+                None => {
+                    let url = if args.is_test_env() {
+                        "https://test.mod.io/apikey"
+                    } else {
+                        "https://mod.io/apikey"
+                    };
+                    println!("Please visit {} and paste the API key below", url);
+
+                    prompt("Enter api key: ")?
+                }
+            };
             let email = prompt("Enter email: ")?;
 
             let mut rt = Runtime::new()?;
@@ -50,8 +59,9 @@ pub fn exec(config: &Config, args: &ArgMatches<'_>) -> CliResult {
         }
     }
 
-    // FIXME
-    config.save_credentials("apikey".into(), "token".into())?;
+    if let Credentials { api_key, token: Some(token) } = token {
+        config.save_credentials(api_key, token.value)?;
+    }
     Ok(())
 }
 
