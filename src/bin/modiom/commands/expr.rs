@@ -106,7 +106,7 @@ impl fmt::Display for Condition {
             Condition::Literal(Literal::String(s)) => fmt::Debug::fmt(s, f),
             Condition::LiteralList(list) => {
                 write!(f, "(")?;
-                let mut it = list.into_iter().peekable();
+                let mut it = list.iter().peekable();
                 while let Some(e) = it.next() {
                     match e {
                         Literal::Integer(i) => fmt::Display::fmt(i, f),
@@ -122,6 +122,7 @@ impl fmt::Display for Condition {
     }
 }
 
+#[rustfmt::skip]
 mod parser {
     use super::*;
 
@@ -270,6 +271,7 @@ mod parser {
         )
     }
 
+    #[allow(clippy::cognitive_complexity)]
     #[inline]
     fn op_right_only(i: &str) -> IResult<&str, (Option<Operator>, Condition)> {
         do_parse!(
@@ -305,7 +307,7 @@ mod parser {
                         do_parse!(op: operator_eq >> opt!(multispace0) >> (op)) |
                         do_parse!(op: operator_str >> multispace0 >> (op))
                     )) >>
-                    val: verify!(rest, |s: &str| s.len() > 0) >>
+                    val: verify!(rest, |s: &str| !s.is_empty()) >>
                     ({
                         let s = String::from(val);
                         (op, Condition::Literal(Literal::String(s)))

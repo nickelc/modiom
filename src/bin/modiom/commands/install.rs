@@ -60,9 +60,12 @@ pub fn exec(config: &Config, args: &ArgMatches) -> CliResult {
                     .search(filter)
                     .first_page()
                     .map_err(Into::into)
-                    .and_then(|mut list| match list.is_empty() {
-                        false => future::ok(list.remove(0)),
-                        true => future::err(not_found),
+                    .and_then(|mut list| {
+                        if list.is_empty() {
+                            future::err(not_found)
+                        } else {
+                            future::ok(list.remove(0))
+                        }
                     })
                     .and_then(move |mod_| match mod_.modfile {
                         Some(file) => future::ok(file),

@@ -59,7 +59,11 @@ pub fn exec(config: &Config, args: &ArgMatches<'_>) -> CliResult {
         }
     }
 
-    if let Credentials { api_key, token: Some(token) } = token {
+    if let Credentials {
+        api_key,
+        token: Some(token),
+    } = token
+    {
         config.save_credentials(api_key, token.value)?;
     }
     Ok(())
