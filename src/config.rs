@@ -1,15 +1,10 @@
+use std::collections::BTreeMap;
 use std::env;
 use std::fs;
-use std::io::prelude::*;
-use std::io::SeekFrom;
 use std::path::{Path, PathBuf};
 
-use cfg::{Config as Cfg, ConfigError};
-use cfg::{Environment, File, FileFormat};
 use dirs::home_dir;
-use lazycell::LazyCell;
-use toml::value::Table;
-use toml::Value;
+use serde::{Deserialize, Serialize};
 
 use modio::auth::Credentials;
 
@@ -19,14 +14,24 @@ use crate::Result;
 pub struct Config {
     cwd: PathBuf,
     home_dir: PathBuf,
-    inner: LazyCell<Cfg>,
     test_env: bool,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+struct TomlConfig {
+    #[serde(rename = "host")]
+    hosts: Option<BTreeMap<String, TomlCredentials>>,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+struct TomlCredentials {
+    api_key: String,
+    token: String,
 }
 
 impl Config {
     pub fn new(cwd: PathBuf, home_dir: PathBuf) -> Self {
         Self {
-            inner: LazyCell::new(),
             cwd,
             home_dir,
             test_env: false,
@@ -61,84 +66,35 @@ impl Config {
     }
 
     pub fn auth_token(&self) -> Result<Option<Credentials>> {
-        let (api_key, token) = if self.test_env {
-            (
-                self.get_string("auth.test.api_key")?,
-                self.get_string("auth.test.token")?,
-            )
+        let mut config = self.load_config()?;
+        let hosts = config.hosts.get_or_insert_with(Default::default);
+        if let Some(creds) = hosts.get(self.host()) {
+            Ok(Some(Credentials {
+                api_key: creds.api_key.to_owned(),
+                token: Some(modio::auth::Token {
+                    value: creds.token.to_owned(),
+                    expired_at: None,
+                }),
+            }))
         } else {
-            (
-                self.get_string("auth.token")?,
-                self.get_string("auth.token")?,
-            )
-        };
-        let token = token.map(|t| modio::auth::Token {
-            value: t,
-            expired_at: None,
-        });
-        Ok(api_key.map(|api_key| Credentials { api_key, token }))
-    }
-
-    fn cfg(&self) -> Result<&Cfg> {
-        self.inner.try_borrow_with(|| self.load_config())
-    }
-
-    fn load_config(&self) -> Result<Cfg> {
-        let mut cfg = Cfg::new();
-        let credentials: File<_> = self.home_dir.join("credentials").into();
-        cfg.merge(credentials.format(FileFormat::Toml).required(true))?;
-        cfg.merge(Environment::with_prefix("modio").separator("_"))?;
-        Ok(cfg)
-    }
-
-    pub fn get_string(&self, key: &str) -> Result<Option<String>> {
-        match self.cfg()?.get_str(key) {
-            Ok(v) => Ok(Some(v)),
-            Err(ConfigError::NotFound(_)) => Ok(None),
-            Err(e) => Err(e.into()),
+            Ok(None)
         }
     }
 
-    pub fn save_credentials(&self, token: String) -> Result<()> {
+    fn load_config(&self) -> Result<TomlConfig> {
         fs::create_dir_all(&self.home_dir)?;
-        let mut file = fs::OpenOptions::new()
-            .read(true)
-            .write(true)
-            .create(true)
-            .open(self.home_dir.join("credentials"))?;
+        let content = fs::read_to_string(self.home_dir.join("credentials"))?;
+        Ok(toml::from_str(&content)?)
+    }
 
-        let mut contents = String::new();
-        file.read_to_string(&mut contents)?;
+    pub fn save_credentials(&self, api_key: String, token: String) -> Result<()> {
+        let mut config = self.load_config()?;
 
-        let mut toml: Value = contents
-            .parse()
-            .map_err(|e| format!("Failed to load credentials: {}", e))?;
+        let hosts = config.hosts.get_or_insert_with(Default::default);
+        hosts.insert(self.host().to_owned(), TomlCredentials { api_key, token });
 
-        let (key, value) = if self.test_env {
-            let mut table = Table::new();
-            table.insert("token".into(), token.into());
-            ("test".into(), table.into())
-        } else {
-            ("token".into(), token.into())
-        };
-
-        if let Some(table) = toml.as_table_mut() {
-            let auth = table.entry("auth").or_insert_with(|| Table::new().into());
-
-            // Make sure an existing value is a table
-            if !auth.is_table() {
-                *auth = Table::new().into();
-            }
-            if let Some(table) = auth.as_table_mut() {
-                table.insert(key, value);
-            }
-        }
-
-        let contents = toml.to_string();
-        file.seek(SeekFrom::Start(0))?;
-        file.write_all(contents.as_bytes())?;
-        file.set_len(contents.len() as u64)?;
-
+        let content = toml::to_string(&config)?;
+        fs::write(self.home_dir.join("credentials"), content)?;
         Ok(())
     }
 }

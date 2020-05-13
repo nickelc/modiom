@@ -51,7 +51,7 @@ pub fn exec(config: &Config, args: &ArgMatches<'_>) -> CliResult {
     }
 
     // FIXME
-    config.save_credentials(token.token.unwrap().value)?;
+    config.save_credentials("apikey".into(), "token".into())?;
     Ok(())
 }
 
