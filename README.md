@@ -8,66 +8,15 @@
 
 modiom is a command line tool for [mod.io](https://mod.io) to search, download and update mods for games without builtin support.
 
-## The Modio Manifest Format
-
-The `Modio.toml` file
-
-### The `[game]` section
-
-```toml
-[game]
-# id = (int|string)
-id = "gametwo" # the name_id of the game or alternative its id
-```
-
-#### The `with-dependencies` field (optional)
-
-This field specifies globally whether dependencies of mods are downloaded.
-If you don't specify the field, it will default to `false`.
-
-```toml
-[game]
-# ...
-with-dependencies = true
-```
-
-### Specifying mods
-
-```toml
-[mods]
-mod1 = 1
-mod2 = "mod-two"
-mod3 = { id = "mod-three" }
-
-[mods.mod4]
-id = 4
-with-dependencies = true
-```
-
-#### The `with-dependencies` field (optional)
-
-This field specifies whether dependencies of the mod are downloaded and overrides the global setting.
-If you don't specify the field, it will default to `false`.
-
-#### The `file` field (optional)
-
-This field specifies the downloaded file id.
-
-```toml
-[mods.mod1]
-id = "mod-one"
-file = 34
-```
-
-#### The `version` field (optional)
-
-This field specifies the downloaded version.
-
-```toml
-[mods.mod1]
-id = "mod-one"
-version = "1.2"
-```
+1. [Building](#building)
+2. [Installation](#installation)
+3. [Usage](#usage)
+    1. [`modiom login`](#modiom-login)
+    2. [`modiom search`](#modiom-search)
+    3. [`modiom info`](#modiom-info)
+    4. [`modiom download`](#modiom-download)
+    5. [`modiom upload`](#modiom-upload)
+4. [Manifest format](#the-modio-manifest-format)
 
 ## Building
 
@@ -101,13 +50,14 @@ $ modiom login --help
 modiom-login
 
 USAGE:
-    modiom login [OPTIONS] [token]
+    modiom login [OPTIONS] [api-key] [token]
 
 OPTIONS:
         --test-env    use the test environment
     -h, --help        Prints help information
 
 ARGS:
+    <api-key>
     <token>
 ```
 
@@ -198,4 +148,65 @@ ARGS:
     <GAME>    Unique id of the game.
     <MOD>     Unique id of the mod.
     <FILE>    Zip file to upload.
+```
+
+## The Modio Manifest Format
+
+The `Modio.toml` file
+
+### The `[game]` section
+
+```toml
+[game]
+# id = (int|string)
+id = "gametwo" # the name_id of the game or alternative its id
+```
+
+#### The `with-dependencies` field (optional)
+
+This field specifies globally whether dependencies of mods are downloaded.
+If you don't specify the field, it will default to `false`.
+
+```toml
+[game]
+# ...
+with-dependencies = true
+```
+
+### Specifying mods
+
+```toml
+[mods]
+mod1 = 1
+mod2 = "mod-two"
+mod3 = { id = "mod-three" }
+
+[mods.mod4]
+id = 4
+with-dependencies = true
+```
+
+#### The `with-dependencies` field (optional)
+
+This field specifies whether dependencies of the mod are downloaded and overrides the global setting.
+If you don't specify the field, it will default to `false`.
+
+#### The `file` field (optional)
+
+This field specifies the downloaded file id.
+
+```toml
+[mods.mod1]
+id = "mod-one"
+file = 34
+```
+
+#### The `version` field (optional)
+
+This field specifies the downloaded version.
+
+```toml
+[mods.mod1]
+id = "mod-one"
+version = "1.2"
 ```
