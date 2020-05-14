@@ -14,6 +14,10 @@ modiom is a command line tool for [mod.io](https://mod.io) to search, download a
     1. [`modiom login`](#modiom-login)
     2. [`modiom search`](#modiom-search)
     3. [`modiom info`](#modiom-info)
+    3. [`modiom subs`](#modiom-subscriptions)
+        1. [`modiom subs list`](#modiom-subscriptions-list)
+        2. [`modiom subs add`](#modiom-subscriptions-add)
+        3. [`modiom subs rm`](#modiom-subscriptions-remove)
     4. [`modiom download`](#modiom-download)
     5. [`modiom upload`](#modiom-upload)
 4. [Manifest format](#the-modio-manifest-format)
@@ -96,6 +100,77 @@ USAGE:
 OPTIONS:
         --files       List all files.
         --stats       Show the statistics.
+        --test-env    Use the mod.io test environment
+    -h, --help        Prints help information
+
+ARGS:
+    <GAME>    Unique id of a game.
+    <MOD>     Unique id of a mod.
+```
+
+### modiom subscriptions
+
+```
+$ modiom subs --help
+modiom-subscriptions
+Show information of subscriptions
+
+USAGE:
+    modiom subscriptions [OPTIONS] <SUBCOMMAND>
+
+OPTIONS:
+        --test-env    Use the mod.io test environment
+    -h, --help        Prints help information
+
+SUBCOMMANDS:
+    list
+    add
+    remove
+```
+
+### modiom subscriptions list
+
+```
+$ modiom subs list --help
+modiom-subscriptions-list
+
+USAGE:
+    modiom subscriptions list [OPTIONS]
+
+OPTIONS:
+        --game-id <ID>    Unique id of a game.
+        --test-env        Use the mod.io test environment
+    -h, --help            Prints help information
+```
+
+### modiom subscriptions add
+
+```
+$ modiom subs add --help
+modiom-subscriptions-add
+
+USAGE:
+    modiom subscriptions add [OPTIONS] <GAME> <MOD>
+
+OPTIONS:
+        --test-env    Use the mod.io test environment
+    -h, --help        Prints help information
+
+ARGS:
+    <GAME>    Unique id of a game.
+    <MOD>     Unique id of a mod.
+```
+
+### modiom subscriptions remove
+
+```
+$ modiom subs rm --help
+modiom-subscriptions-remove
+
+USAGE:
+    modiom subscriptions remove [OPTIONS] <GAME> <MOD>
+
+OPTIONS:
         --test-env    Use the mod.io test environment
     -h, --help        Prints help information
 
