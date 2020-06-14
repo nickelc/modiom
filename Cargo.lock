@@ -574,7 +574,7 @@ dependencies = [
 [[package]]
 name = "modio"
 version = "0.4.1"
-source = "git+https://github.com/nickelc/modio-rs.git#e9fc5e419fcc41aa6a29fa60cb79ed05f823a507"
+source = "git+https://github.com/nickelc/modio-rs.git#d5cd2ba476189af47e584317327ccc6e6abb63dd"
 dependencies = [
  "bitflags 1.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "bytes 0.5.4 (registry+https://github.com/rust-lang/crates.io-index)",

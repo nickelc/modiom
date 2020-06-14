@@ -22,7 +22,7 @@ pub fn client(config: &Config) -> Result<modio::Modio> {
 
     let client = modio::Modio::builder(token)
         .host(config.host())
-        .agent("modiom")
+        .user_agent("modiom")
         .build()?;
     Ok(client)
 }
