@@ -20,7 +20,8 @@ pub struct Config {
 #[derive(Debug, Deserialize, Serialize)]
 struct TomlConfig {
     #[serde(rename = "host")]
-    hosts: Option<BTreeMap<String, TomlCredentials>>,
+    #[serde(default)]
+    hosts: BTreeMap<String, TomlCredentials>,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -66,9 +67,8 @@ impl Config {
     }
 
     pub fn auth_token(&self) -> Result<Option<Credentials>> {
-        let mut config = self.load_config()?;
-        let hosts = config.hosts.get_or_insert_with(Default::default);
-        if let Some(creds) = hosts.get(self.host()) {
+        let config = self.load_config()?;
+        if let Some(creds) = config.hosts.get(self.host()) {
             Ok(Some(Credentials {
                 api_key: creds.api_key.to_owned(),
                 token: Some(modio::auth::Token {
@@ -90,8 +90,8 @@ impl Config {
     pub fn save_credentials(&self, api_key: String, token: String) -> Result<()> {
         let mut config = self.load_config()?;
 
-        let hosts = config.hosts.get_or_insert_with(Default::default);
-        hosts.insert(self.host().to_owned(), TomlCredentials { api_key, token });
+        let creds = TomlCredentials { api_key, token };
+        config.hosts.insert(self.host().to_owned(), creds);
 
         let content = toml::to_string(&config)?;
         fs::write(self.home_dir.join("credentials"), content)?;
