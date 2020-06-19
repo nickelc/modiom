@@ -1,6 +1,5 @@
 use std::path::Path;
 
-use futures::{future, TryFutureExt};
 use futures::{stream, TryStreamExt};
 use modio::filter::prelude::*;
 use modiom::manifest::{self, Identifier};
@@ -37,51 +36,41 @@ pub fn exec(config: &Config, args: &ArgMatches) -> CliResult {
                 }
             }
         };
-        let tasks = manifest
-            .mods
-            .unwrap_or_default()
-            .iter()
-            .map(move |(_, m)| {
-                let modio2 = modio.clone();
-                let filter;
-                let not_found: Box<dyn std::error::Error> = match m.id() {
-                    Identifier::Id(id) => {
-                        filter = Id::eq(id);
-                        format!("mod with id `{}` not found", id).into()
+        let mut tasks = vec![];
+        for (_, m) in manifest.mods.unwrap_or_default() {
+            let filter;
+            let not_found: Box<dyn std::error::Error> = match m.id() {
+                Identifier::Id(id) => {
+                    filter = Id::eq(id);
+                    format!("mod with id `{}` not found", id).into()
+                }
+                Identifier::NameId(id) => {
+                    filter = NameId::eq(id);
+                    format!("mod with name-id `{}` not found", id).into()
+                }
+            };
+            tasks.push(async {
+                let mod_ = modio.game(game_id).mods().search(filter).first().await?;
+                match mod_ {
+                    None => Err(not_found),
+                    Some(m) if m.modfile.is_none() => {
+                        Err(format!("mod `{}` has no primary file", m.name_id).into())
                     }
-                    Identifier::NameId(id) => {
-                        filter = NameId::eq(id);
-                        format!("mod with name-id `{}` not found", id).into()
-                    }
-                };
-                modio
-                    .game(game_id)
-                    .mods()
-                    .search(filter)
-                    .first_page()
-                    .map_err(Into::into)
-                    .and_then(|mut list| {
-                        if list.is_empty() {
-                            future::err(not_found)
-                        } else {
-                            future::ok(list.remove(0))
-                        }
-                    })
-                    .and_then(move |mod_| match mod_.modfile {
-                        Some(file) => future::ok(file),
-                        None => future::err(
-                            format!("mod `{}` has no primary file", mod_.name_id).into(),
-                        ),
-                    })
-                    .and_then(move |file| {
+                    Some(m) => {
+                        let file = m.modfile.unwrap();
                         println!("Downloading: {}", file.download.binary_url);
                         let out = Path::new(&file.filename).to_path_buf();
-                        modio2.download(file).save_to_file(out).map_err(Into::into)
-                    })
-            })
-            .collect::<stream::FuturesUnordered<_>>();
-
-        tasks.try_collect::<Vec<_>>().await
+                        modio.download(file).save_to_file(out).await?;
+                        Ok(())
+                    }
+                }
+            });
+        }
+        tasks
+            .into_iter()
+            .collect::<stream::FuturesUnordered<_>>()
+            .try_collect::<Vec<()>>()
+            .await
     };
 
     rt.block_on(tasks)?;
