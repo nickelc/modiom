@@ -10,7 +10,7 @@ pub struct Md5(md5::Md5);
 
 impl Md5 {
     pub fn to_lower_hex(self) -> String {
-        format!("{:x}", self.0.result())
+        format!("{:x}", self.0.finalize())
     }
 }
 
@@ -22,7 +22,7 @@ impl Sink<Bytes> for Md5 {
     }
 
     fn start_send(mut self: Pin<&mut Self>, bytes: Bytes) -> Result<(), Self::Error> {
-        Digest::input(&mut self.0, bytes);
+        Digest::update(&mut self.0, bytes);
         Ok(())
     }
 
@@ -43,7 +43,7 @@ impl Sink<BytesMut> for Md5 {
     }
 
     fn start_send(mut self: Pin<&mut Self>, bytes: BytesMut) -> Result<(), Self::Error> {
-        Digest::input(&mut self.0, bytes);
+        Digest::update(&mut self.0, bytes);
         Ok(())
     }
 

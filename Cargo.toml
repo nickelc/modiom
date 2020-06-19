@@ -18,7 +18,7 @@ bytes = "0.5"
 clap = "2"
 dirs = "2"
 futures = "0.3"
-md-5 = "0.8"
+md-5 = "0.9"
 nom = "5"
 pbr = "1"
 serde = { version = "1", features = ["derive"] }
