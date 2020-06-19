@@ -1,4 +1,4 @@
-<a href="https://mod.io"><img src="https://github.com/nickelc/modiom/raw/header/header.png" alt="mod.io" width="320"/></a>
+<a href="https://mod.io"><img src="https://github.com/nickelc/modiom/raw/master/header.png" alt="mod.io" width="320"/></a>
 
 # modiom
 [![CI][gha-badge]][gha-url]
