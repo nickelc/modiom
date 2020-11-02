@@ -647,15 +647,15 @@ dependencies = [
 
 [[package]]
 name = "modio"
-version = "0.4.1"
-source = "git+https://github.com/nickelc/modio-rs.git#ca8de8f1e32e20409e9d6ccf24b6d4bfa7db5ce0"
+version = "0.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bc56d46c9a0ec6389d175ab0907b1c4c6e95258fbfc4da5ad03767fc47284ca9"
 dependencies = [
  "bitflags",
  "bytes",
  "futures-core",
  "futures-util",
  "http",
- "log",
  "mime",
  "pin-project-lite",
  "reqwest",
@@ -663,6 +663,7 @@ dependencies = [
  "serde_json",
  "tokio",
  "tokio-util",
+ "tracing",
  "url",
 ]
 
@@ -1149,7 +1150,19 @@ dependencies = [
  "cfg-if 0.1.10",
  "log",
  "pin-project-lite",
+ "tracing-attributes",
  "tracing-core",
+]
+
+[[package]]
+name = "tracing-attributes"
+version = "0.1.11"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "80e0ccfc3378da0cce270c946b676a376943f5cd16aeba64568e7939806f4ada"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
 ]
 
 [[package]]
