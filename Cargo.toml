@@ -16,10 +16,10 @@ name = "modiom"
 [dependencies]
 bytes = "0.5"
 clap = "2"
-dirs = "2"
+dirs = { version = "2", package = "dirs-next" }
 futures = "0.3"
 md-5 = "0.9"
-nom = "5"
+nom = "6"
 pbr = "1"
 serde = { version = "1", features = ["derive"] }
 textwrap = "0.11"

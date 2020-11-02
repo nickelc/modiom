@@ -133,7 +133,7 @@ mod parser {
     use nom::combinator::{rest, value};
     use nom::multi::many0;
     use nom::{alt, delimited, do_parse, opt, tag, take_until, verify};
-    use nom::{Err as NomError, IResult};
+    use nom::{Err as NomError, IResult, error::Error};
 
     #[inline]
     fn identifier(i: &str) -> IResult<&str, &str> {
@@ -323,8 +323,8 @@ mod parser {
             Ok((_, e)) => Ok(e),
             Err(e) => {
                 let msg = match e {
-                    NomError::Error((i, _)) | NomError::Failure((i, _)) => {
-                        format!("failed to parse {:?}", i)
+                    NomError::Error(Error { input, .. }) | NomError::Failure(Error { input, .. }) => {
+                        format!("failed to parse {:?}", input)
                     }
                     NomError::Incomplete(_) => String::from("failed to parse expression"),
                 };
@@ -346,8 +346,8 @@ mod parser {
             }
             Err(e) => {
                 let msg = match e {
-                    NomError::Error((i, _)) | NomError::Failure((i, _)) => {
-                        format!("failed to parse {:?}", i)
+                    NomError::Error(Error { input, .. }) | NomError::Failure(Error { input, .. }) => {
+                        format!("failed to parse {:?}", input)
                     }
                     NomError::Incomplete(_) => String::from("failed to parse expression"),
                 };
