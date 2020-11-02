@@ -17,7 +17,7 @@ pub struct Config {
     test_env: bool,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Default, Deserialize, Serialize)]
 struct TomlConfig {
     #[serde(rename = "host")]
     #[serde(default)]
@@ -83,8 +83,21 @@ impl Config {
 
     fn load_config(&self) -> Result<TomlConfig> {
         fs::create_dir_all(&self.home_dir)?;
-        let content = fs::read_to_string(self.home_dir.join("credentials"))?;
-        Ok(toml::from_str(&content)?)
+
+        let path = self.home_dir.join("credentials");
+        let file = fs::File::open(&path).and_then(|file| file.metadata().map(|md| (file, md)));
+
+        match file {
+            Ok((mut file, md)) if md.is_file() => {
+                use std::io::Read;
+
+                let mut content = String::new();
+                file.read_to_string(&mut content)?;
+
+                Ok(toml::from_str(&content)?)
+            }
+            Ok(_) | Err(_) => Ok(TomlConfig::default()),
+        }
     }
 
     pub fn save_credentials(&self, api_key: String, token: String) -> Result<()> {
@@ -94,7 +107,10 @@ impl Config {
         config.hosts.insert(self.host().to_owned(), creds);
 
         let content = toml::to_string(&config)?;
-        fs::write(self.home_dir.join("credentials"), content)?;
-        Ok(())
+        let path = self.home_dir.join("credentials");
+        match fs::write(&path, content) {
+            Ok(()) => Ok(()),
+            Err(e) => Err(format!("Failed to write {}: {}", path.display(), e).into()),
+        }
     }
 }
