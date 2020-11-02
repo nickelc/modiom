@@ -41,7 +41,7 @@ impl Config {
 
     pub fn default() -> Result<Config> {
         let cwd = env::current_dir()?;
-        let homedir = home_dir().ok_or_else(|| "Couldn't find your home directory.")?;
+        let homedir = home_dir().ok_or("Couldn't find your home directory.")?;
         Ok(Config::new(cwd, homedir.join(".modio")))
     }
 

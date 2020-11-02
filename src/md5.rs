@@ -9,7 +9,7 @@ use md5::digest::Digest;
 pub struct Md5(md5::Md5);
 
 impl Md5 {
-    pub fn to_lower_hex(self) -> String {
+    pub fn into_lower_hex(self) -> String {
         format!("{:x}", self.0.finalize())
     }
 }

@@ -67,7 +67,7 @@ pub fn exec(config: &Config, args: &ArgMatches<'_>) -> CliResult {
         src.file_name()
             .and_then(|n| n.to_str())
             .map(|n| n.to_string())
-            .ok_or_else(|| "Failed to get the filename")?
+            .ok_or("Failed to get the filename")?
     };
 
     let checksum = async {
@@ -78,7 +78,7 @@ pub fn exec(config: &Config, args: &ArgMatches<'_>) -> CliResult {
             let mut md5 = Md5::default();
             r.forward(&mut md5).await?;
 
-            Ok(Some(md5.to_lower_hex()))
+            Ok(Some(md5.into_lower_hex()))
         } else {
             Ok(None)
         }

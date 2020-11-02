@@ -18,7 +18,7 @@ pub type App = clap::App<'static, 'static>;
 pub fn client(config: &Config) -> Result<modio::Modio> {
     let token = config
         .auth_token()?
-        .ok_or_else(|| "authentication token required")?;
+        .ok_or("authentication token required")?;
 
     let client = modio::Modio::builder(token)
         .host(config.host())
