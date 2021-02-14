@@ -49,6 +49,7 @@ jobs:
         run: strip "target/${{ matrix.target }}/release/modiom"
 
       - name: Package
+        id: package
         shell: bash
         run: |
           version=${GITHUB_REF#refs/tags/}
@@ -60,11 +61,11 @@ jobs:
           if [ "${{ runner.os }}" = "Windows" ]; then
             cp "target/${{ matrix.target }}/release/modiom.exe" "$staging/"
             7z a "$staging.zip" "$staging"
-            echo "::set-env name=ASSET::$staging.zip"
+            echo "::set-output name=ASSET::$staging.zip"
           else
             cp "target/${{ matrix.target }}/release/modiom" "$staging/"
             tar czf "$staging.tar.gz"  "$staging"
-            echo "::set-env name=ASSET::$staging.tar.gz"
+            echo "::set-output name=ASSET::$staging.tar.gz"
           fi
 
       - name: Upload
@@ -73,6 +74,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ github.event.release.upload_url }}
-          asset_name: ${{ env.ASSET }}
-          asset_path: ${{ env.ASSET }}
+          asset_name: ${{ steps.package.outputs.ASSET }}
+          asset_path: ${{ steps.package.outputs.ASSET }}
           asset_content_type: application/octet-stream
