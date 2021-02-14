@@ -5,7 +5,7 @@ use prettytable::format;
 use tokio::fs::{self, File};
 use tokio::io::BufReader;
 use tokio::runtime::Runtime;
-use tokio_util::codec::{BytesCodec, FramedRead};
+use tokio_util::io::ReaderStream;
 
 use modio::files::AddFileOptions;
 use modiom::config::Config;
@@ -74,9 +74,9 @@ pub fn exec(config: &Config, args: &ArgMatches<'_>) -> CliResult {
         if args.is_present("checksum") {
             let r = File::open(&src).await?;
             let r = BufReader::with_capacity(512 * 512, r);
-            let r = FramedRead::new(r, BytesCodec::new());
+            let st = ReaderStream::new(r);
             let mut md5 = Md5::default();
-            r.forward(&mut md5).await?;
+            st.forward(&mut md5).await?;
 
             Ok(Some(md5.into_lower_hex()))
         } else {
