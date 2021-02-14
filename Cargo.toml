@@ -17,9 +17,9 @@ name = "modiom"
 bytes = "1.0"
 clap = "2"
 dirs = { version = "2", package = "dirs-next" }
-futures = "0.3"
+futures = { version = "0.3", default-features = false, features = ["alloc"] }
 md-5 = "0.9"
-nom = "6"
+nom = { version = "6", default-features = false, features = ["alloc"] }
 pbr = "1"
 serde = { version = "1", features = ["derive"] }
 textwrap = "0.11"
