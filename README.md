@@ -33,7 +33,7 @@ $ git clone https://github.com/nickelc/modiom.git
 $ cd modiom
 $ cargo build --release
 $ ./target/release/modiom --version
-modiom 0.1.0
+modiom 0.3.0
 ```
 
 ## Installation
