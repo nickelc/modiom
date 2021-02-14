@@ -53,7 +53,7 @@ pub fn exec(config: &Config, args: &ArgMatches<'_>) -> CliResult {
     let mod_id = value_t!(args, "mod", u32)?;
     let src = value_t!(args, "src", String).map(PathBuf::from)?;
 
-    let mut rt = Runtime::new()?;
+    let rt = Runtime::new()?;
     let modio = client(config)?;
 
     let active = !args.is_present("not-active");

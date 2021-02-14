@@ -14,7 +14,7 @@ edition = "2018"
 name = "modiom"
 
 [dependencies]
-bytes = "0.5"
+bytes = "1.0"
 clap = "2"
 dirs = { version = "2", package = "dirs-next" }
 futures = "0.3"
@@ -23,12 +23,12 @@ nom = "6"
 pbr = "1"
 serde = { version = "1", features = ["derive"] }
 textwrap = "0.11"
-tokio = "0.2"
-tokio-util = { version = "0.3", features = ["codec"] }
+tokio = { version = "1.0", features = ["rt-multi-thread"] }
+tokio-util = { version = "0.6", features = ["codec"] }
 toml = "0.5"
 
 [dependencies.modio]
-version = "0.5"
+version = "0.6"
 default-features = false
 features = ["rustls-tls"]
 

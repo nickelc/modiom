@@ -37,7 +37,7 @@ pub fn exec(config: &Config, args: &ArgMatches<'_>) -> CliResult {
             };
             let email = prompt("Enter email: ")?;
 
-            let mut rt = Runtime::new()?;
+            let rt = Runtime::new()?;
             let m = Modio::host(config.host(), Credentials::new(api_key))?;
 
             rt.block_on(m.auth().request_code(&email))?;

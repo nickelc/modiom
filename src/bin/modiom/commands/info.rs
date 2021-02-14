@@ -32,7 +32,7 @@ pub fn exec(config: &Config, args: &ArgMatches<'_>) -> CliResult {
     let game_id = value_t!(args, "game", u32)?;
     let mod_id = value_t!(args, "mod", u32)?;
 
-    let mut rt = Runtime::new()?;
+    let rt = Runtime::new()?;
     let modio = client(config)?;
 
     let modref = modio.mod_(game_id, mod_id);

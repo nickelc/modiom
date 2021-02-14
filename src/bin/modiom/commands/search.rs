@@ -61,7 +61,7 @@ pub fn exec(config: &Config, args: &ArgMatches<'_>) -> CliResult {
     filter.set_format(*format::consts::FORMAT_CLEAN);
     filter.set_titles(row![b -> "Filter"]);
 
-    let mut rt = Runtime::new()?;
+    let rt = Runtime::new()?;
     let m = client(config)?;
 
     if let Ok(game_id) = game_id {

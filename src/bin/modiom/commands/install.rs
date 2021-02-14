@@ -20,7 +20,7 @@ pub fn exec(config: &Config, args: &ArgMatches) -> CliResult {
         _ => return Err("no mods defined".into()),
     }
 
-    let mut rt = Runtime::new()?;
+    let rt = Runtime::new()?;
     let modio = client(config)?;
 
     let tasks = async {

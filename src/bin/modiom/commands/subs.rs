@@ -73,7 +73,7 @@ pub fn exec(config: &Config, args: &ArgMatches<'_>) -> CliResult {
 fn list_subs(config: &Config, args: &ArgMatches<'_>) -> CliResult {
     let game_id = value_t!(args, "game-id", u32);
 
-    let mut rt = Runtime::new()?;
+    let rt = Runtime::new()?;
     let m = client(config)?;
 
     let filter = if let Ok(game_id) = game_id {
@@ -123,7 +123,7 @@ fn subscribe(config: &Config, args: &ArgMatches<'_>) -> CliResult {
     let game_id = value_t!(args, "game", u32)?;
     let mod_id = value_t!(args, "mod", u32)?;
 
-    let mut rt = Runtime::new()?;
+    let rt = Runtime::new()?;
     let m = client(config)?;
 
     rt.block_on(m.mod_(game_id, mod_id).subscribe())?;
@@ -134,7 +134,7 @@ fn unsubscribe(config: &Config, args: &ArgMatches<'_>) -> CliResult {
     let game_id = value_t!(args, "game", u32)?;
     let mod_id = value_t!(args, "mod", u32)?;
 
-    let mut rt = Runtime::new()?;
+    let rt = Runtime::new()?;
     let m = client(config)?;
 
     rt.block_on(m.mod_(game_id, mod_id).unsubscribe())?;
