@@ -122,18 +122,19 @@ impl fmt::Display for Condition {
     }
 }
 
-#[rustfmt::skip]
 mod parser {
+    use std::str::FromStr;
+
     use super::*;
 
     use nom::branch::alt;
-    use nom::bytes::complete::{tag, tag_no_case, take_while};
+    use nom::bytes::complete::{tag, tag_no_case, take_until, take_while};
     use nom::character::complete::{digit1, multispace0};
     use nom::character::is_alphanumeric;
-    use nom::combinator::{rest, value};
-    use nom::multi::many0;
-    use nom::{alt, delimited, do_parse, opt, tag, take_until, verify};
-    use nom::{Err as NomError, IResult, error::Error};
+    use nom::combinator::{map, map_res, opt, rest, value, verify};
+    use nom::multi::separated_list1;
+    use nom::sequence::{delimited, pair, preceded, separated_pair, terminated};
+    use nom::{error::Error, IResult};
 
     #[inline]
     fn identifier(i: &str) -> IResult<&str, &str> {
@@ -177,33 +178,21 @@ mod parser {
 
     #[inline]
     fn integer_lit(i: &str) -> IResult<&str, Literal> {
-        do_parse!(
-            i,
-            sign: opt!(tag!("-")) >>
-            val: digit1 >>
-            ({
-                let mut intval = i64::from_str_radix(val, 10).unwrap();
-                if sign.is_some() {
-                    intval *= -1;
-                }
-                Literal::Integer(intval)
-            })
-        )
+        let (i, (sign, mut val)) = pair(opt(tag("-")), map_res(digit1, i64::from_str))(i)?;
+        if sign.is_some() {
+            val *= -1;
+        }
+        Ok((i, Literal::Integer(val)))
     }
 
     #[inline]
     fn string_lit(i: &str) -> IResult<&str, Literal> {
-        do_parse!(
-            i,
-            val: alt!(
-                delimited!(tag!("\""), opt!(take_until!("\"")), tag!("\""))
-                | delimited!(tag!("'"), opt!(take_until!("'")), tag!("'"))
-            ) >>
-            ({
-                let s = val.map(From::from).unwrap_or_else(String::new);
-                Literal::String(s)
-            })
-        )
+        let (i, string) = alt((
+            delimited(tag("\""), opt(take_until("\"")), tag("\"")),
+            delimited(tag("'"), opt(take_until("'")), tag("'")),
+        ))(i)?;
+        let value = string.map(String::from).unwrap_or_default();
+        Ok((i, Literal::String(value)))
     }
 
     #[inline]
@@ -213,109 +202,118 @@ mod parser {
 
     #[inline]
     fn value_list(i: &str) -> IResult<&str, Vec<Literal>> {
-        fn _value(i: &str) -> IResult<&str, Literal> {
-            do_parse!(
-                i,
-                val: literal >>
-                opt!(
-                    do_parse!(
-                        opt!(multispace0) >>
-                        tag!(",") >>
-                        opt!(multispace0) >>
-                        ()
-                    )
-                ) >>
-                (val)
-            )
-        }
-        many0(_value)(i)
+        separated_list1(delimited(multispace0, tag(","), multispace0), literal)(i)
+    }
+
+    #[inline]
+    fn operator_eq_literal(i: &str) -> IResult<&str, (Operator, Condition)> {
+        separated_pair(operator_eq, multispace0, map(literal, Condition::Literal))(i)
+    }
+
+    #[inline]
+    fn operator_int_literal(i: &str) -> IResult<&str, (Operator, Condition)> {
+        separated_pair(
+            operator_int,
+            multispace0,
+            map(integer_lit, Condition::Literal),
+        )(i)
+    }
+
+    #[inline]
+    fn operator_str_literal(i: &str) -> IResult<&str, (Operator, Condition)> {
+        separated_pair(
+            operator_str,
+            multispace0,
+            map(string_lit, Condition::Literal),
+        )(i)
+    }
+
+    #[inline]
+    fn operator_lst_literal(i: &str) -> IResult<&str, (Operator, Condition)> {
+        let value_list = delimited(tag("("), value_list, tag(")"));
+        separated_pair(
+            operator_lst,
+            multispace0,
+            map(value_list, Condition::LiteralList),
+        )(i)
     }
 
     #[inline]
     fn full_expr(i: &str) -> IResult<&str, Expr> {
-        do_parse!(
-            i,
-            left: identifier >>
-            opt!(multispace0) >>
-            op_right: alt!(
-                do_parse!(
-                    op: operator_eq >>
-                    opt!(multispace0) >>
-                    right: literal >>
-                    ((op, Condition::Literal(right)))
-                ) |
-                do_parse!(
-                    op: operator_int >>
-                    opt!(multispace0) >>
-                    right: integer_lit >>
-                    ((op, Condition::Literal(right)))
-                ) |
-                do_parse!(
-                    op: operator_str >>
-                    opt!(multispace0) >>
-                    right: string_lit >>
-                    ((op, Condition::Literal(right)))
-                ) |
-                do_parse!(
-                    op: operator_lst >>
-                    opt!(multispace0) >>
-                    right: delimited!(tag!("("), value_list, tag!(")")) >>
-                    ((op, Condition::LiteralList(right)))
-                )
-            ) >>
-            (Expr {
-                property: String::from(left),
-                op: op_right.0,
-                right: op_right.1
-            })
-        )
+        let op_right = alt((
+            operator_eq_literal,
+            operator_int_literal,
+            operator_str_literal,
+            operator_lst_literal,
+        ));
+        let property = map(identifier, String::from);
+        let (i, (property, (op, right))) = separated_pair(property, multispace0, op_right)(i)?;
+        let expr = Expr {
+            property,
+            op,
+            right,
+        };
+        Ok((i, expr))
     }
 
-    #[allow(clippy::cognitive_complexity)]
+    #[inline]
+    fn opt_operator_eq_literal(i: &str) -> IResult<&str, (Option<Operator>, Condition)> {
+        separated_pair(
+            opt(operator_eq),
+            multispace0,
+            map(literal, Condition::Literal),
+        )(i)
+    }
+
+    #[inline]
+    fn opt_operator_int_literal(i: &str) -> IResult<&str, (Option<Operator>, Condition)> {
+        separated_pair(
+            opt(operator_int),
+            multispace0,
+            map(integer_lit, Condition::Literal),
+        )(i)
+    }
+
+    #[inline]
+    fn opt_operator_str_literal(i: &str) -> IResult<&str, (Option<Operator>, Condition)> {
+        separated_pair(
+            opt(operator_str),
+            multispace0,
+            map(string_lit, Condition::Literal),
+        )(i)
+    }
+
+    #[inline]
+    fn opt_operator_lst_literal(i: &str) -> IResult<&str, (Option<Operator>, Condition)> {
+        let value_list = delimited(tag("("), value_list, tag(")"));
+        separated_pair(
+            opt(operator_lst),
+            multispace0,
+            map(value_list, Condition::LiteralList),
+        )(i)
+    }
+
     #[inline]
     fn op_right_only(i: &str) -> IResult<&str, (Option<Operator>, Condition)> {
-        do_parse!(
-            i,
-            opt!(multispace0) >>
-            op_right: alt!(
-                do_parse!(
-                    op: opt!(operator_eq) >>
-                    opt!(multispace0) >>
-                    right: literal >>
-                    (op, Condition::Literal(right))
-                ) |
-                do_parse!(
-                    op: opt!(operator_int) >>
-                    opt!(multispace0) >>
-                    right: integer_lit >>
-                    (op, Condition::Literal(right))
-                ) |
-                do_parse!(
-                    op: opt!(operator_str) >>
-                    opt!(multispace0) >>
-                    right: string_lit >>
-                    (op, Condition::Literal(right))
-                ) |
-                do_parse!(
-                    op: opt!(operator_lst) >>
-                    opt!(multispace0) >>
-                    right: delimited!(tag!("("), value_list, tag!(")")) >>
-                    (op, Condition::LiteralList(right))
-                ) |
-                do_parse!(
-                    op: opt!(alt!(
-                        do_parse!(op: operator_eq >> opt!(multispace0) >> (op)) |
-                        do_parse!(op: operator_str >> multispace0 >> (op))
-                    )) >>
-                    val: verify!(rest, |s: &str| !s.is_empty()) >>
-                    ({
-                        let s = String::from(val);
-                        (op, Condition::Literal(Literal::String(s)))
-                    })
-                )
-            ) >>
-            (op_right)
-        )
+        fn rest_as_string(i: &str) -> IResult<&str, Condition> {
+            let (i, s) = verify(rest, |s: &str| !s.is_empty())(i)?;
+            let lit = Condition::Literal(Literal::String(String::from(s)));
+            Ok((i, lit))
+        }
+        let op_right = alt((
+            opt_operator_eq_literal,
+            opt_operator_int_literal,
+            opt_operator_str_literal,
+            opt_operator_lst_literal,
+            pair(
+                opt(alt((
+                    terminated(operator_eq, multispace0),
+                    terminated(operator_str, multispace0),
+                ))),
+                rest_as_string,
+            ),
+        ));
+        preceded(multispace0, op_right)(i)
     }
 
     pub fn parse(expr: &str) -> Result<Expr, String> {
@@ -323,10 +321,11 @@ mod parser {
             Ok((_, e)) => Ok(e),
             Err(e) => {
                 let msg = match e {
-                    NomError::Error(Error { input, .. }) | NomError::Failure(Error { input, .. }) => {
+                    nom::Err::Error(Error { input, .. })
+                    | nom::Err::Failure(Error { input, .. }) => {
                         format!("failed to parse {:?}", input)
                     }
-                    NomError::Incomplete(_) => String::from("failed to parse expression"),
+                    nom::Err::Incomplete(_) => String::from("failed to parse expression"),
                 };
                 Err(msg)
             }
@@ -346,10 +345,11 @@ mod parser {
             }
             Err(e) => {
                 let msg = match e {
-                    NomError::Error(Error { input, .. }) | NomError::Failure(Error { input, .. }) => {
+                    nom::Err::Error(Error { input, .. })
+                    | nom::Err::Failure(Error { input, .. }) => {
                         format!("failed to parse {:?}", input)
                     }
-                    NomError::Incomplete(_) => String::from("failed to parse expression"),
+                    nom::Err::Incomplete(_) => String::from("failed to parse expression"),
                 };
                 return Err(msg);
             }
@@ -411,7 +411,7 @@ mod parser {
         fn test_parse_for() {
             assert_eq!(
                 parse_for("id", ""),
-                Err(String::from("failed to parse expression")),
+                Err(String::from("failed to parse \"\"")),
             );
             assert_eq!(
                 parse_for("id", "1"),
