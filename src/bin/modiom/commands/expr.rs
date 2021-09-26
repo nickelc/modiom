@@ -377,6 +377,14 @@ mod parser {
                 }),
             );
             assert_eq!(
+                parse("id = -1"),
+                Ok(Expr {
+                    property: String::from("id"),
+                    op: Operator::Equals,
+                    right: Condition::Literal(Literal::Integer(-1)),
+                }),
+            );
+            assert_eq!(
                 parse("id > 1"),
                 Ok(Expr {
                     property: String::from("id"),
@@ -384,6 +392,15 @@ mod parser {
                     right: Condition::Literal(Literal::Integer(1)),
                 }),
             );
+            assert_eq!(
+                parse("id in (1,2)"),
+                Ok(Expr {
+                    property: String::from("id"),
+                    op: Operator::In,
+                    right: Condition::LiteralList(vec![Literal::Integer(1), Literal::Integer(2)]),
+                }),
+            );
+            assert!(parse("id in ()").is_err());
             assert_eq!(
                 parse("id > a"),
                 Err(String::from("failed to parse \"> a\"")),
