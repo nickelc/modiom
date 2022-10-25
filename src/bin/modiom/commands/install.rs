@@ -7,8 +7,8 @@ use tokio::runtime::Runtime;
 
 use crate::command_prelude::*;
 
-pub fn cli() -> App {
-    subcommand("install").arg_manifest_path()
+pub fn cli() -> Command {
+    Command::new("install").arg_manifest_path()
 }
 
 pub fn exec(config: &Config, args: &ArgMatches) -> CliResult {

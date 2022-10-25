@@ -7,30 +7,30 @@ use modiom::config::Config;
 
 use crate::command_prelude::*;
 
-pub fn cli() -> App {
-    subcommand("info")
+pub fn cli() -> Command {
+    Command::new("info")
         .about("Show information of mods")
         .arg(
-            Arg::with_name("game")
+            Arg::new("game")
                 .help("Unique id of a game.")
                 .value_name("GAME")
                 .required(true)
-                .validator(validate_u32),
+                .value_parser(value_parser!(u32)),
         )
         .arg(
-            Arg::with_name("mod")
+            Arg::new("mod")
                 .help("Unique id of a mod.")
                 .value_name("MOD")
                 .required(true)
-                .validator(validate_u32),
+                .value_parser(value_parser!(u32)),
         )
-        .arg(opt("files", "List all files."))
-        .arg(opt("stats", "Show the statistics."))
+        .arg(opt("files", "List all files.").action(ArgAction::SetTrue))
+        .arg(opt("stats", "Show the statistics.").action(ArgAction::SetTrue))
 }
 
-pub fn exec(config: &Config, args: &ArgMatches<'_>) -> CliResult {
-    let game_id = value_t!(args, "game", u32)?;
-    let mod_id = value_t!(args, "mod", u32)?;
+pub fn exec(config: &Config, args: &ArgMatches) -> CliResult {
+    let game_id = *args.get_one("game").expect("required arg");
+    let mod_id = *args.get_one("mod").expect("required arg");
 
     let rt = Runtime::new()?;
     let modio = client(config)?;
@@ -38,7 +38,7 @@ pub fn exec(config: &Config, args: &ArgMatches<'_>) -> CliResult {
     let modref = modio.mod_(game_id, mod_id);
 
     let files = async {
-        if args.is_present("files") {
+        if args.get_flag("files") {
             let f = Default::default();
             modref.files().search(f).first_page().map_ok(Some).await
         } else {
@@ -49,7 +49,7 @@ pub fn exec(config: &Config, args: &ArgMatches<'_>) -> CliResult {
     let modref = modio.mod_(game_id, mod_id);
 
     let stats = async {
-        if args.is_present("stats") {
+        if args.get_flag("stats") {
             modref.statistics().map_ok(Some).await
         } else {
             Ok(None)

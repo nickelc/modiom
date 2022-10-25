@@ -8,8 +8,8 @@ use modiom::config::Config;
 use crate::command_prelude::*;
 use crate::commands::expr;
 
-pub fn cli() -> App {
-    subcommand("search")
+pub fn cli() -> Command {
+    Command::new("search")
         .about("Search game or mods.")
         .arg(
             opt(
@@ -17,45 +17,45 @@ pub fn cli() -> App {
                 "When specified, modiom will search for mods of the game.",
             )
             .value_name("ID")
-            .validator(validate_u32),
+            .value_parser(value_parser!(u32)),
         )
         .arg(
             opt("id", "Specify the id of the game or mod.")
-                .multiple(true)
-                .number_of_values(1)
-                .value_name("ID"),
+                .num_args(1)
+                .value_name("ID")
+                .action(ArgAction::Append),
         )
         .arg(opt("name", "").value_name("VALUE"))
         .arg(opt("name-id", "").value_name("VALUE"))
-        .arg(Arg::with_name("ft").value_name("FULLTEXT"))
+        .arg(Arg::new("ft").value_name("FULLTEXT"))
         .arg(
             opt("expr", "")
-                .multiple(true)
-                .number_of_values(1)
-                .value_name("EXPR"),
+                .num_args(1)
+                .value_name("EXPR")
+                .action(ArgAction::Append),
         )
 }
 
-pub fn exec(config: &Config, args: &ArgMatches<'_>) -> CliResult {
+pub fn exec(config: &Config, args: &ArgMatches) -> CliResult {
     let mut exprs = vec![];
 
-    if let Some(vals) = args.values_of("expr") {
+    if let Some(vals) = args.get_many::<String>("expr") {
         for e in vals {
             exprs.push(expr::parse(e)?);
         }
     }
-    if let Some(vals) = args.values_of("id") {
+    if let Some(vals) = args.get_many::<String>("id") {
         for id in vals {
             exprs.push(expr::parse_for("id", id)?);
         }
     }
-    if let Some(name) = args.value_of("name") {
+    if let Some(name) = args.get_string("name") {
         exprs.push(expr::parse_for("name", name)?);
     }
-    if let Some(name_id) = args.value_of("name-id") {
+    if let Some(name_id) = args.get_string("name-id") {
         exprs.push(expr::parse_for("name_id", name_id)?);
     }
-    let game_id = value_t!(args, "game-id", u32);
+    let game_id = args.get_one::<u32>("game-id").copied();
 
     let mut filter = Table::new();
     filter.set_format(*format::consts::FORMAT_CLEAN);
@@ -64,13 +64,13 @@ pub fn exec(config: &Config, args: &ArgMatches<'_>) -> CliResult {
     let rt = Runtime::new()?;
     let m = client(config)?;
 
-    if let Ok(game_id) = game_id {
+    if let Some(game_id) = game_id {
         let mut f = Filter::default();
         for e in exprs {
             filter.add_row(row![e]);
             f = f.and(custom_filter(e.property, e.op.into(), e.right.into_value()));
         }
-        if let Some(ft) = args.value_of("ft") {
+        if let Some(ft) = args.get_string("ft") {
             filter.add_row(row![format!("fulltext = {:?}", ft)]);
             f = f.and(Fulltext::eq(ft));
         }
@@ -102,7 +102,7 @@ pub fn exec(config: &Config, args: &ArgMatches<'_>) -> CliResult {
             filter.add_row(row![e]);
             f = f.and(custom_filter(e.property, e.op.into(), e.right.into_value()));
         }
-        if let Some(ft) = args.value_of("ft") {
+        if let Some(ft) = args.get_string("ft") {
             filter.add_row(row![format!("fulltext = {:?}", ft)]);
             f = f.and(Fulltext::eq(ft));
         }

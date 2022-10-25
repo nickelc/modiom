@@ -9,15 +9,15 @@ use modiom::config::Config;
 
 use crate::command_prelude::*;
 
-pub fn cli() -> App {
-    subcommand("login")
-        .arg(Arg::with_name("api-key"))
-        .arg(Arg::with_name("token"))
+pub fn cli() -> Command {
+    Command::new("login")
+        .arg(Arg::new("api-key"))
+        .arg(Arg::new("token"))
 }
 
-pub fn exec(config: &Config, args: &ArgMatches<'_>) -> CliResult {
-    let api_key = args.value_of("api-key");
-    let token = args.value_of("token");
+pub fn exec(config: &Config, args: &ArgMatches) -> CliResult {
+    let api_key = args.get_string("api-key");
+    let token = args.get_string("token");
 
     let token = match (api_key, token) {
         (Some(api_key), Some(token)) => Credentials::with_token(api_key, token),

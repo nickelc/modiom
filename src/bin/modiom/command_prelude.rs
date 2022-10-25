@@ -1,19 +1,18 @@
+use std::any::Any;
+use std::borrow::Cow;
 use std::fs;
 use std::io;
-use std::path::PathBuf;
-use std::result::Result as StdResult;
+use std::path::{Path, PathBuf};
 
-use clap::{self, SubCommand};
-
-pub use clap::{value_t, values_t};
-pub use clap::{AppSettings, Arg, ArgGroup, ArgMatches};
+pub use clap::builder::{
+    Arg, ArgAction, ArgGroup, Command, PathBufValueParser, TypedValueParser, ValueParser,
+};
+pub use clap::{value_parser, ArgMatches};
 pub use modiom::config::Config;
 pub use modiom::{CliResult, Result};
 pub use prettytable::{cell, row, table};
 
 use modiom::utils::find_manifest_for_wd;
-
-pub type App = clap::App<'static, 'static>;
 
 pub fn client(config: &Config) -> Result<modio::Modio> {
     let token = config
@@ -27,107 +26,67 @@ pub fn client(config: &Config) -> Result<modio::Modio> {
     Ok(client)
 }
 
-pub fn opt(name: &'static str, help: &'static str) -> Arg<'static, 'static> {
-    Arg::with_name(name).long(name).help(help)
+pub fn opt(name: &'static str, help: &'static str) -> Arg {
+    Arg::new(name).long(name).help(help)
 }
 
-pub fn subcommand(name: &'static str) -> App {
-    SubCommand::with_name(name).settings(&[
-        AppSettings::UnifiedHelpMessage,
-        AppSettings::DeriveDisplayOrder,
-        AppSettings::DontCollapseArgsInUsage,
-    ])
-}
-
-#[allow(dead_code)]
-#[allow(clippy::needless_pass_by_value)]
-pub fn validate_is_file(value: String) -> StdResult<(), String> {
-    if !PathBuf::from(value).is_file() {
-        return Err(String::from("Path is not a file."));
-    }
-    Ok(())
-}
-
-#[allow(dead_code)]
-#[allow(clippy::needless_pass_by_value)]
-pub fn validate_path_exists(value: String) -> StdResult<(), String> {
-    if !PathBuf::from(value).exists() {
-        return Err(String::from("Path does not exist."));
-    }
-    Ok(())
-}
-
-#[allow(clippy::needless_pass_by_value)]
-pub fn validate_is_zip(value: String) -> StdResult<(), String> {
-    if !PathBuf::from(&value).is_file() && value.ends_with(".zip") {
-        return Err(String::from("File is not a zip."));
-    }
-    Ok(())
-}
-
-#[allow(clippy::needless_pass_by_value)]
-pub fn validate_u32(value: String) -> StdResult<(), String> {
-    match value.parse::<u32>() {
-        Ok(_) => Ok(()),
-        Err(e) => Err(format!("{}", e)),
-    }
-}
-
-pub trait AppExt: Sized {
-    fn _arg(self, arg: Arg<'static, 'static>) -> Self;
+pub trait CommandExt: Sized {
+    fn _arg(self, arg: Arg) -> Self;
 
     fn arg_manifest_path(self) -> Self {
-        self._arg(opt("manifest-path", "Path to Modio.toml").value_name("PATH"))
+        self._arg(
+            opt("manifest-path", "Path to Modio.toml")
+                .value_name("PATH")
+                .value_parser(ValueParser::path_buf()),
+        )
     }
 }
 
-impl AppExt for App {
-    fn _arg(self, arg: Arg<'static, 'static>) -> Self {
+impl CommandExt for Command {
+    fn _arg(self, arg: Arg) -> Self {
         self.arg(arg)
     }
 }
 
 pub trait ArgMatchesExt {
+    fn _get_flag(&self, _: &str) -> bool;
+
+    fn _get_one<T: Any + Clone + Send + Sync + 'static>(&self, _: &str) -> Option<&T>;
+
     fn is_test_env(&self) -> bool {
-        self._is_present("test-env")
+        self._get_flag("test-env")
     }
 
-    fn _is_present(&self, _: &str) -> bool;
-
-    fn _value_of(&self, name: &str) -> Option<&str>;
-
-    fn value_of_path(&self, name: &str) -> Option<PathBuf> {
-        self._value_of(name).map(PathBuf::from)
-    }
-
-    fn root_manifest(&self, config: &Config) -> io::Result<PathBuf>;
-}
-
-impl<'a> ArgMatchesExt for ArgMatches<'a> {
-    fn _is_present(&self, name: &str) -> bool {
-        self.is_present(name)
-    }
-
-    fn _value_of(&self, name: &str) -> Option<&str> {
-        self.value_of(name)
-    }
-
-    fn root_manifest(&self, config: &Config) -> io::Result<PathBuf> {
-        if let Some(path) = self.value_of_path("manifest-path") {
+    fn root_manifest(&self, config: &Config) -> io::Result<Cow<Path>> {
+        if let Some(path) = self._get_one::<PathBuf>("manifest-path") {
             if !path.ends_with("Modio.toml") {
                 return Err(io::Error::new(
                     io::ErrorKind::InvalidInput,
                     "the manifest-path must be a path to a Modio.toml file",
                 ));
             }
-            if fs::metadata(&path).is_err() {
+            if fs::metadata(path).is_err() {
                 return Err(io::Error::new(
                     io::ErrorKind::NotFound,
                     format!("manifest-path `{}` does not exist", path.display()),
                 ));
             }
-            return Ok(path);
+            return Ok(path.into());
         }
-        find_manifest_for_wd(config.cwd())
+        find_manifest_for_wd(config.cwd()).map(Cow::from)
+    }
+
+    fn get_string(&self, id: &str) -> Option<&String> {
+        self._get_one::<String>(id)
+    }
+}
+
+impl ArgMatchesExt for ArgMatches {
+    fn _get_flag(&self, id: &str) -> bool {
+        self.get_flag(id)
+    }
+
+    fn _get_one<T: Any + Clone + Send + Sync + 'static>(&self, id: &str) -> Option<&T> {
+        self.get_one(id)
     }
 }

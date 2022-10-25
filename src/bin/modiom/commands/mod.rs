@@ -2,7 +2,7 @@ use modiom::config::Config;
 
 use crate::command_prelude::*;
 
-pub fn builtin() -> Vec<App> {
+pub fn builtin() -> Vec<Command> {
     vec![
         login::cli(),
         info::cli(),
@@ -14,15 +14,15 @@ pub fn builtin() -> Vec<App> {
     ]
 }
 
-pub fn exec(cfg: &Config, args: &ArgMatches<'_>) -> CliResult {
+pub fn exec(cfg: &Config, args: &ArgMatches) -> CliResult {
     match args.subcommand() {
-        ("login", Some(matches)) => login::exec(cfg, matches),
-        ("info", Some(matches)) => info::exec(cfg, matches),
-        ("search", Some(matches)) => search::exec(cfg, matches),
-        ("subscriptions", Some(matches)) => subs::exec(cfg, matches),
-        ("download", Some(matches)) => download::exec(cfg, matches),
-        ("upload", Some(matches)) => upload::exec(cfg, matches),
-        ("install", Some(matches)) => install::exec(cfg, matches),
+        Some(("login", matches)) => login::exec(cfg, matches),
+        Some(("info", matches)) => info::exec(cfg, matches),
+        Some(("search", matches)) => search::exec(cfg, matches),
+        Some(("subscriptions", matches)) => subs::exec(cfg, matches),
+        Some(("download", matches)) => download::exec(cfg, matches),
+        Some(("upload", matches)) => upload::exec(cfg, matches),
+        Some(("install", matches)) => install::exec(cfg, matches),
         _ => unreachable!(),
     }
 }

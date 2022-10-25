@@ -13,70 +13,68 @@ use crate::command_prelude::*;
 
 type Subs = BTreeMap<u32, Vec<Mod>>;
 
-pub fn cli() -> App {
-    subcommand("subscriptions")
-        .settings(&[
-            AppSettings::UnifiedHelpMessage,
-            AppSettings::DeriveDisplayOrder,
-            AppSettings::SubcommandRequiredElseHelp,
-            AppSettings::VersionlessSubcommands,
-        ])
+pub fn cli() -> Command {
+    Command::new("subscriptions")
         .about("Show information of subscriptions")
         .alias("subs")
-        .subcommand(subcommand("list").arg(opt("game-id", "Unique id of a game.").value_name("ID")))
+        .subcommand_required(true)
+        .arg_required_else_help(true)
         .subcommand(
-            subcommand("add")
+            Command::new("list").arg(opt("game-id", "Unique id of a game.").value_name("ID")),
+        )
+        .subcommand(
+            Command::new("add")
                 .arg(
-                    Arg::with_name("game")
+                    Arg::new("game")
                         .help("Unique id of a game.")
                         .value_name("GAME")
                         .required(true)
-                        .validator(validate_u32),
+                        .value_parser(value_parser!(u32)),
                 )
                 .arg(
-                    Arg::with_name("mod")
+                    Arg::new("mod")
                         .help("Unique id of a mod.")
                         .value_name("MOD")
                         .required(true)
-                        .validator(validate_u32),
+                        .value_parser(value_parser!(u32)),
                 ),
         )
         .subcommand(
-            subcommand("remove")
+            Command::new("remove")
                 .alias("rm")
                 .arg(
-                    Arg::with_name("game")
+                    Arg::new("game")
                         .help("Unique id of a game.")
                         .value_name("GAME")
                         .required(true)
-                        .validator(validate_u32),
+                        .value_parser(value_parser!(u32)),
                 )
                 .arg(
-                    Arg::with_name("mod")
+                    Arg::new("mod")
                         .help("Unique id of a mod.")
                         .value_name("MOD")
                         .required(true)
-                        .validator(validate_u32),
+                        .value_parser(value_parser!(u32)),
                 ),
         )
 }
 
-pub fn exec(config: &Config, args: &ArgMatches<'_>) -> CliResult {
+pub fn exec(config: &Config, args: &ArgMatches) -> CliResult {
     match args.subcommand() {
-        ("list", Some(matches)) => list_subs(config, matches),
-        ("add", Some(matches)) => subscribe(config, matches),
-        ("remove", Some(matches)) => unsubscribe(config, matches),
+        Some(("list", matches)) => list_subs(config, matches),
+        Some(("add", matches)) => subscribe(config, matches),
+        Some(("remove", matches)) => unsubscribe(config, matches),
         _ => unreachable!(),
     }
 }
 
-fn list_subs(config: &Config, args: &ArgMatches<'_>) -> CliResult {
-    let game_id = value_t!(args, "game-id", u32);
+fn list_subs(config: &Config, args: &ArgMatches) -> CliResult {
+    let game_id = args.get_one::<u32>("game-id");
 
     let rt = Runtime::new()?;
     let m = client(config)?;
 
-    let filter = if let Ok(game_id) = game_id {
+    let filter = if let Some(game_id) = game_id {
         GameId::eq(game_id)
     } else {
         Default::default()
@@ -119,9 +117,9 @@ fn list_subs(config: &Config, args: &ArgMatches<'_>) -> CliResult {
     Ok(())
 }
 
-fn subscribe(config: &Config, args: &ArgMatches<'_>) -> CliResult {
-    let game_id = value_t!(args, "game", u32)?;
-    let mod_id = value_t!(args, "mod", u32)?;
+fn subscribe(config: &Config, args: &ArgMatches) -> CliResult {
+    let game_id = *args.get_one("game").expect("required arg");
+    let mod_id = *args.get_one("mod").expect("required arg");
 
     let rt = Runtime::new()?;
     let m = client(config)?;
@@ -130,9 +128,9 @@ fn subscribe(config: &Config, args: &ArgMatches<'_>) -> CliResult {
     Ok(())
 }
 
-fn unsubscribe(config: &Config, args: &ArgMatches<'_>) -> CliResult {
-    let game_id = value_t!(args, "game", u32)?;
-    let mod_id = value_t!(args, "mod", u32)?;
+fn unsubscribe(config: &Config, args: &ArgMatches) -> CliResult {
+    let game_id = *args.get_one("game").expect("required arg");
+    let mod_id = *args.get_one("mod").expect("required arg");
 
     let rt = Runtime::new()?;
     let m = client(config)?;

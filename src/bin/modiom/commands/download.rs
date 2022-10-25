@@ -1,3 +1,4 @@
+use std::borrow::Cow;
 use std::collections::HashSet;
 use std::path::PathBuf;
 
@@ -8,44 +9,46 @@ use modiom::config::Config;
 
 use crate::command_prelude::*;
 
-pub fn cli() -> App {
-    subcommand("download")
+pub fn cli() -> Command {
+    Command::new("download")
         .about("Download mod files")
         .arg(
             opt("game-id", "Specify a game id")
                 .value_name("ID")
-                .number_of_values(1)
+                .num_args(1)
                 .required(true)
-                .validator(validate_u32),
+                .value_parser(value_parser!(u32)),
         )
         .arg(
             opt("mod-id", "Specify a mod id")
                 .value_name("ID")
-                .multiple(true)
-                .number_of_values(1)
+                .num_args(1)
                 .required(true)
-                .validator(validate_u32),
+                .value_parser(value_parser!(u32))
+                .action(ArgAction::Append),
         )
         //.arg(opt("with-dependencies", ""))
         .arg(
-            Arg::with_name("dest")
+            Arg::new("dest")
                 .help("Save files to DEST")
-                .value_name("DEST"),
+                .value_name("DEST")
+                .value_parser(ValueParser::path_buf()),
         )
 }
 
-pub fn exec(config: &Config, args: &ArgMatches<'_>) -> CliResult {
-    let game_id = value_t!(args, "game-id", u32)?;
-    let mod_ids = values_t!(args, "mod-id", u32)?;
-    let _with_deps = args.is_present("with-dependencies");
-    let dest = value_t!(args, "dest", String)
-        .ok()
-        .map(PathBuf::from)
-        .unwrap_or_else(PathBuf::new);
+pub fn exec(config: &Config, args: &ArgMatches) -> CliResult {
+    let game_id = *args.get_one("game-id").expect("required arg");
+    let mod_ids = args.get_many::<u32>("mod-id").expect("required arg");
+    let _with_deps = args.get_flag("with-dependencies");
+    let dest = args
+        .get_one::<PathBuf>("dest")
+        .map(Cow::from)
+        .unwrap_or_default();
 
     let rt = Runtime::new()?;
     let modio_ = client(config)?;
 
+    let mod_ids = mod_ids.copied().collect::<Vec<_>>();
     let mut missing_mods: HashSet<u32> = HashSet::new();
     missing_mods.extend(&mod_ids);
 

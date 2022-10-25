@@ -15,7 +15,7 @@ name = "modiom"
 
 [dependencies]
 bytes = "1.0"
-clap = "2"
+clap = "4.0"
 dirs = "4"
 futures = { version = "0.3", default-features = false, features = ["alloc"] }
 md-5 = "0.10"
