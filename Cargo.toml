@@ -16,22 +16,19 @@ name = "modiom"
 [dependencies]
 bytes = "1.0"
 clap = "2"
-dirs = { version = "2", package = "dirs-next" }
+dirs = "4"
 futures = { version = "0.3", default-features = false, features = ["alloc"] }
-md-5 = "0.9"
-nom = { version = "6", default-features = false, features = ["alloc"] }
+md-5 = "0.10"
+nom = { version = "7.1", default-features = false, features = ["alloc"] }
 pbr = "1"
+prettytable-rs = { version = "0.9", default-features = false }
 serde = { version = "1", features = ["derive"] }
-textwrap = "0.13"
+textwrap = { version = "0.16", default-features = false, features = ["unicode-width", "smawk"] }
 tokio = { version = "1.0", features = ["rt-multi-thread"] }
-tokio-util = { version = "0.6", features = ["io"] }
+tokio-util = { version = "0.7", features = ["io"] }
 toml = "0.5"
 
 [dependencies.modio]
-version = "0.6"
+version = "0.7"
 default-features = false
 features = ["rustls-tls"]
-
-[dependencies.prettytable-rs]
-version = "0.8"
-default-features = false
