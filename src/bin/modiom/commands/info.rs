@@ -77,7 +77,7 @@ pub fn exec(config: &Config, args: &ArgMatches<'_>) -> CliResult {
                 [b -> "Name", m.name],
                 [b -> "Summary", fill(&m.summary, 60)],
                 [b -> "Profile", m.profile_url],
-                [b -> "Homepage", m.homepage_url.map(|u| u.to_string()).unwrap_or_else(String::new)],
+                [b -> "Homepage", m.homepage_url.map(|u| u.to_string()).unwrap_or_default()],
                 [b -> "Tags", format!("[{}]", tags)],
                 [b -> "Dependencies", format!("{:?}", deps)]
             );
@@ -89,7 +89,7 @@ pub fn exec(config: &Config, args: &ArgMatches<'_>) -> CliResult {
                 mt.add_row(row![bH2 -> "File"]);
                 mt.add_row(row![b -> "Id", file.id]);
                 mt.add_row(row![b -> "Filename", file.filename]);
-                mt.add_row(row![b -> "Version", file.version.unwrap_or_else(String::new)]);
+                mt.add_row(row![b -> "Version", file.version.unwrap_or_default()]);
                 mt.add_row(row![b -> "Download", file.download.binary_url]);
                 mt.add_row(row![b -> "Size", file.filesize]);
                 mt.add_row(row![b -> "MD5", file.filehash.md5]);
@@ -132,7 +132,7 @@ pub fn exec(config: &Config, args: &ArgMatches<'_>) -> CliResult {
                     ft.add_row(row![
                         format!("{}{}", file.id, suffix),
                         file.filename,
-                        file.version.unwrap_or_else(String::new),
+                        file.version.unwrap_or_default(),
                         file.download.binary_url
                     ]);
                 }

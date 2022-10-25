@@ -162,12 +162,12 @@ pub struct DetailedModDependency {
 }
 
 pub fn read(path: &Path) -> Result<ModioManifest, Box<dyn std::error::Error>> {
-    let content = utils::read(&path)?;
-    parse(&content, &path)
+    let content = utils::read(path)?;
+    parse(&content, path)
 }
 
 pub fn parse(content: &str, path: &Path) -> Result<ModioManifest, Box<dyn std::error::Error>> {
-    let manifest = toml::from_str(&content)
+    let manifest = toml::from_str(content)
         .map_err(|_| format!("failed to parse manifest at `{}`", path.display()))?;
     Ok(manifest)
 }

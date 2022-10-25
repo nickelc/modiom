@@ -117,7 +117,7 @@ pub fn exec(config: &Config, args: &ArgMatches<'_>) -> CliResult {
                 [bH2 -> "Uploaded File"],
                 [b -> "Id", file.id],
                 [b -> "Filename", file.filename],
-                [b -> "Version", file.version.unwrap_or_else(String::new)],
+                [b -> "Version", file.version.unwrap_or_default()],
                 [b -> "Download", file.download.binary_url],
                 [b -> "Size", file.filesize],
                 [b -> "MD5", file.filehash.md5]
