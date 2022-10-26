@@ -51,178 +51,158 @@ $ cargo install --path modiom
 
 ```
 $ modiom login --help
-modiom-login
+Usage: modiom login [OPTIONS] [api-key] [token]
 
-USAGE:
-    modiom login [OPTIONS] [api-key] [token]
+Arguments:
+  [api-key]
+  [token]
 
-OPTIONS:
-        --test-env    use the test environment
-    -h, --help        Prints help information
-
-ARGS:
-    <api-key>
-    <token>
+Options:
+      --test-env  Use the mod.io test environment
+  -h, --help      Print help information
 ```
 
 ### modiom search
 
 ```
 $ modiom search --help
-modiom-search
+Search game or mods.
 
-USAGE:
-    modiom search [OPTIONS] [--] [FULLTEXT]
+Usage: modiom search [OPTIONS] [FULLTEXT]
 
-OPTIONS:
-        --game-id <ID>
-        --id <ID>...
-        --name <VALUE>
-        --name-id <VALUE>
-        --expr <EXPR>...
-        --test-env           use the test environment
-    -h, --help               Prints help information
+Arguments:
+  [FULLTEXT]
 
-ARGS:
-    <FULLTEXT>
+Options:
+      --game-id <ID>     When specified, modiom will search for mods of the game.
+      --id <ID>          Specify the id of the game or mod.
+      --name <VALUE>
+      --name-id <VALUE>
+      --expr <EXPR>
+      --test-env         Use the mod.io test environment
+  -h, --help             Print help information
 ```
 
 ### modiom info
 
 ```
 $ modiom info --help
-modiom-info
 Show information of mods
 
-USAGE:
-    modiom info [OPTIONS] <GAME> <MOD>
+Usage: modiom info [OPTIONS] <GAME> <MOD>
 
-OPTIONS:
-        --files       List all files.
-        --stats       Show the statistics.
-        --test-env    Use the mod.io test environment
-    -h, --help        Prints help information
+Arguments:
+  <GAME>  Unique id of a game.
+  <MOD>   Unique id of a mod.
 
-ARGS:
-    <GAME>    Unique id of a game.
-    <MOD>     Unique id of a mod.
+Options:
+      --files     List all files.
+      --stats     Show the statistics.
+      --test-env  Use the mod.io test environment
+  -h, --help      Print help information
 ```
 
 ### modiom subscriptions
 
 ```
 $ modiom subs --help
-modiom-subscriptions
 Show information of subscriptions
 
-USAGE:
-    modiom subscriptions [OPTIONS] <SUBCOMMAND>
+Usage: modiom subscriptions [OPTIONS] <COMMAND>
 
-OPTIONS:
-        --test-env    Use the mod.io test environment
-    -h, --help        Prints help information
+Commands:
+  list
+  add
+  remove
+  help    Print this message or the help of the given subcommand(s)
 
-SUBCOMMANDS:
-    list
-    add
-    remove
+Options:
+      --test-env  Use the mod.io test environment
+  -h, --help      Print help information
 ```
 
 ### modiom subscriptions list
 
 ```
 $ modiom subs list --help
-modiom-subscriptions-list
+Usage: modiom subscriptions list [OPTIONS]
 
-USAGE:
-    modiom subscriptions list [OPTIONS]
-
-OPTIONS:
-        --game-id <ID>    Unique id of a game.
-        --test-env        Use the mod.io test environment
-    -h, --help            Prints help information
+Options:
+      --game-id <ID>  Unique id of a game.
+      --test-env      Use the mod.io test environment
+  -h, --help          Print help information
 ```
 
 ### modiom subscriptions add
 
 ```
 $ modiom subs add --help
-modiom-subscriptions-add
+Usage: modiom subscriptions add [OPTIONS] <GAME> <MOD>
 
-USAGE:
-    modiom subscriptions add [OPTIONS] <GAME> <MOD>
+Arguments:
+  <GAME>  Unique id of a game.
+  <MOD>   Unique id of a mod.
 
-OPTIONS:
-        --test-env    Use the mod.io test environment
-    -h, --help        Prints help information
-
-ARGS:
-    <GAME>    Unique id of a game.
-    <MOD>     Unique id of a mod.
+Options:
+      --test-env  Use the mod.io test environment
+  -h, --help      Print help information
 ```
 
 ### modiom subscriptions remove
 
 ```
 $ modiom subs rm --help
-modiom-subscriptions-remove
+Usage: modiom subscriptions remove [OPTIONS] <GAME> <MOD>
 
-USAGE:
-    modiom subscriptions remove [OPTIONS] <GAME> <MOD>
+Arguments:
+  <GAME>  Unique id of a game.
+  <MOD>   Unique id of a mod.
 
-OPTIONS:
-        --test-env    Use the mod.io test environment
-    -h, --help        Prints help information
-
-ARGS:
-    <GAME>    Unique id of a game.
-    <MOD>     Unique id of a mod.
+Options:
+      --test-env  Use the mod.io test environment
+  -h, --help      Print help information
 ```
 
 ### modiom download
 
 ```
 $ modiom download --help
-modiom-download
+Download mod files
 
-USAGE:
-    modiom download [OPTIONS] --game-id <ID> --mod-id <ID>... [--] [DEST]
+Usage: modiom download [OPTIONS] --game-id <ID> --mod-id <ID> [DEST]
 
-OPTIONS:
-        --game-id <ID>
-        --mod-id <ID>...
-        --with-dependencies
-        --test-env             use the test environment
-    -h, --help                 Prints help information
+Arguments:
+  [DEST]  Save files to DEST
 
-ARGS:
-    <DEST>
+Options:
+      --game-id <ID>  Specify a game id
+      --mod-id <ID>   Specify a mod id
+      --test-env      Use the mod.io test environment
+  -h, --help          Print help information
 ```
 
 ### modiom upload
 
 ```
 $ modiom upload --help
-modiom-upload
 Upload new files
 
-USAGE:
-    modiom upload [OPTIONS] <GAME> <MOD> <FILE>
+Usage: modiom upload [OPTIONS] <GAME> <MOD> <FILE>
 
-OPTIONS:
-        --filename <NAME>          Overwrite the filename.
-        --version <VERSION>        Version of this file release.
-        --changelog <CHANGELOG>    Changelog of this release.
-        --not-active               When this flag is enabled, the upload will not be labeled as current release.
-        --metadata-blob <BLOB>
-        --checksum                 Calculate the checksum before uploading.
-        --test-env                 Use the mod.io test environment
-    -h, --help                     Prints help information
+Arguments:
+  <GAME>  Unique id of the game.
+  <MOD>   Unique id of the mod.
+  <FILE>  Zip file to upload.
 
-ARGS:
-    <GAME>    Unique id of the game.
-    <MOD>     Unique id of the mod.
-    <FILE>    Zip file to upload.
+Options:
+      --filename <NAME>        Overwrite the filename.
+      --version <VERSION>      Version of this file release.
+      --changelog <CHANGELOG>  Changelog of this release.
+      --not-active             The uploaded file will not be labeled as current release.
+      --metadata-blob <BLOB>
+      --checksum               Calculate the checksum before uploading.
+      --test-env               Use the mod.io test environment
+  -h, --help                   Print help information
 ```
 
 ## The Modio Manifest Format
