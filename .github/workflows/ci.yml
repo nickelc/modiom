@@ -9,12 +9,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
-
-      - name: Install rust
-        uses: hecrj/setup-rust-action@v1
-        with:
-          components: rustfmt
+        uses: actions/checkout@v3
 
       - run: cargo fmt -- --check
 
@@ -48,12 +43,12 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Install rust
-        uses: hecrj/setup-rust-action@v1
+        uses: dtolnay/rust-toolchain@master
         with:
-          rust-version: ${{ matrix.rust || 'stable' }}
+          toolchain: ${{ matrix.rust || 'stable' }}
 
       - name: Test
         run: cargo test
