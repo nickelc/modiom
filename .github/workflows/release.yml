@@ -61,11 +61,11 @@ jobs:
           if [ "${{ runner.os }}" = "Windows" ]; then
             cp "target/${{ matrix.target }}/release/modiom.exe" "$staging/"
             7z a "$staging.zip" "$staging"
-            echo "::set-output name=ASSET::$staging.zip"
+            echo "ASSET=$staging.zip" >> $GITHUB_OUTPUT
           else
             cp "target/${{ matrix.target }}/release/modiom" "$staging/"
             tar czf "$staging.tar.gz"  "$staging"
-            echo "::set-output name=ASSET::$staging.tar.gz"
+            echo "ASSET=$staging.tar.gz" >> $GITHUB_OUTPUT
           fi
 
       - name: Upload
