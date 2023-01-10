@@ -19,7 +19,6 @@ dirs = "4"
 futures = { version = "0.3", default-features = false, features = ["alloc"] }
 md-5 = "0.10"
 nom = { version = "7.1", default-features = false, features = ["alloc"] }
-pbr = "1"
 prettytable-rs = { version = "0.10", default-features = false }
 serde = { version = "1", features = ["derive"] }
 textwrap = { version = "0.16", default-features = false, features = ["unicode-width", "smawk"] }

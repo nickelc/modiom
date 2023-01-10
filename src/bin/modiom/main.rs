@@ -3,7 +3,6 @@ use modiom::CliResult;
 
 mod command_prelude;
 mod commands;
-// mod progress;
 
 use crate::command_prelude::*;
 
