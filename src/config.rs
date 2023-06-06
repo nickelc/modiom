@@ -3,7 +3,7 @@ use std::env;
 use std::fs;
 use std::path::{Path, PathBuf};
 
-use dirs::home_dir;
+use home::home_dir;
 use serde::{Deserialize, Serialize};
 
 use modio::auth::Credentials;

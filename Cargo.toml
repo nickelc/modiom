@@ -15,8 +15,8 @@ name = "modiom"
 [dependencies]
 bytes = "1.0"
 clap = "4.0"
-dirs = "4"
 futures = { version = "0.3", default-features = false, features = ["alloc"] }
+home = "0.5.5"
 md-5 = "0.10"
 nom = { version = "7.1", default-features = false, features = ["alloc"] }
 prettytable-rs = { version = "0.10", default-features = false }
