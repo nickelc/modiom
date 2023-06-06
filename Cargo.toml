@@ -22,7 +22,7 @@ nom = { version = "7.1", default-features = false, features = ["alloc"] }
 prettytable-rs = { version = "0.10", default-features = false }
 serde = { version = "1", features = ["derive"] }
 textwrap = { version = "0.16", default-features = false, features = ["unicode-width", "smawk"] }
-tokio = { version = "1.0", features = ["rt-multi-thread"] }
+tokio = { version = "1.28.2", features = ["rt-multi-thread"] }
 tokio-util = { version = "0.7", features = ["io"] }
 toml = "0.5"
 
