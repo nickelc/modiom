@@ -39,6 +39,7 @@ impl Config {
         }
     }
 
+    #[allow(clippy::should_implement_trait)]
     pub fn default() -> Result<Config> {
         let cwd = env::current_dir()?;
         let homedir = home_dir().ok_or("Couldn't find your home directory.")?;
@@ -85,7 +86,7 @@ impl Config {
         fs::create_dir_all(&self.home_dir)?;
 
         let path = self.home_dir.join("credentials");
-        let file = fs::File::open(&path).and_then(|file| file.metadata().map(|md| (file, md)));
+        let file = fs::File::open(path).and_then(|file| file.metadata().map(|md| (file, md)));
 
         match file {
             Ok((mut file, md)) if md.is_file() => {
