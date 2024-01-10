@@ -30,14 +30,14 @@ pub fn cli() -> Command {
                         .help("Unique id of a game.")
                         .value_name("GAME")
                         .required(true)
-                        .value_parser(value_parser!(u32)),
+                        .value_parser(value_parser!(id::GameId)),
                 )
                 .arg(
                     Arg::new("mod")
                         .help("Unique id of a mod.")
                         .value_name("MOD")
                         .required(true)
-                        .value_parser(value_parser!(u32)),
+                        .value_parser(value_parser!(id::ModId)),
                 ),
         )
         .subcommand(
@@ -48,14 +48,14 @@ pub fn cli() -> Command {
                         .help("Unique id of a game.")
                         .value_name("GAME")
                         .required(true)
-                        .value_parser(value_parser!(u32)),
+                        .value_parser(value_parser!(id::GameId)),
                 )
                 .arg(
                     Arg::new("mod")
                         .help("Unique id of a mod.")
                         .value_name("MOD")
                         .required(true)
-                        .value_parser(value_parser!(u32)),
+                        .value_parser(value_parser!(id::ModId)),
                 ),
         )
 }

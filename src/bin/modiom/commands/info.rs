@@ -3,6 +3,7 @@ use prettytable::format;
 use textwrap::fill;
 use tokio::runtime::Runtime;
 
+use modio::types::id::{GameId, ModId};
 use modiom::config::Config;
 
 use crate::command_prelude::*;
@@ -15,14 +16,14 @@ pub fn cli() -> Command {
                 .help("Unique id of a game.")
                 .value_name("GAME")
                 .required(true)
-                .value_parser(value_parser!(u32)),
+                .value_parser(value_parser!(GameId)),
         )
         .arg(
             Arg::new("mod")
                 .help("Unique id of a mod.")
                 .value_name("MOD")
                 .required(true)
-                .value_parser(value_parser!(u32)),
+                .value_parser(value_parser!(ModId)),
         )
         .arg(opt("files", "List all files.").action(ArgAction::SetTrue))
         .arg(opt("stats", "Show the statistics.").action(ArgAction::SetTrue))

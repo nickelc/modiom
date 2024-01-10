@@ -3,6 +3,7 @@ use tokio::runtime::Runtime;
 
 use modio::filter::custom_filter;
 use modio::filter::prelude::*;
+use modio::types::id::GameId;
 use modiom::config::Config;
 
 use crate::command_prelude::*;
@@ -17,7 +18,7 @@ pub fn cli() -> Command {
                 "When specified, modiom will search for mods of the game.",
             )
             .value_name("ID")
-            .value_parser(value_parser!(u32)),
+            .value_parser(value_parser!(GameId)),
         )
         .arg(
             opt("id", "Specify the id of the game or mod.")

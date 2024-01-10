@@ -9,6 +9,7 @@ use tokio::runtime::Runtime;
 use tokio_util::io::ReaderStream;
 
 use modio::files::AddFileOptions;
+use modio::types::id::{GameId, ModId};
 use modiom::config::Config;
 use modiom::md5::Md5;
 
@@ -22,14 +23,14 @@ pub fn cli() -> Command {
                 .help("Unique id of the game.")
                 .value_name("GAME")
                 .required(true)
-                .value_parser(value_parser!(u32)),
+                .value_parser(value_parser!(GameId)),
         )
         .arg(
             Arg::new("mod")
                 .help("Unique id of the mod.")
                 .value_name("MOD")
                 .required(true)
-                .value_parser(value_parser!(u32)),
+                .value_parser(value_parser!(ModId)),
         )
         .arg(opt("filename", "Overwrite the filename.").value_name("NAME"))
         .arg(opt("version", "Version of this file release.").value_name("VERSION"))
