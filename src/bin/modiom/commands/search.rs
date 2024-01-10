@@ -55,7 +55,7 @@ pub fn exec(config: &Config, args: &ArgMatches) -> CliResult {
     if let Some(name_id) = args.get_string("name-id") {
         exprs.push(expr::parse_for("name_id", name_id)?);
     }
-    let game_id = args.get_one::<u32>("game-id").copied();
+    let game_id = args.get_one("game-id").copied();
 
     let mut filter = Table::new();
     filter.set_format(*format::consts::FORMAT_CLEAN);

@@ -19,7 +19,7 @@ pub struct ModioManifest {
 #[derive(Debug, PartialEq, Eq, Serialize)]
 #[serde(untagged)]
 pub enum Identifier {
-    Id(u32),
+    Id(u64),
     NameId(String),
 }
 
@@ -56,14 +56,14 @@ impl<'de> Deserialize<'de> for Identifier {
             where
                 E: de::Error,
             {
-                Ok(Identifier::Id(u as u32))
+                Ok(Identifier::Id(u as u64))
             }
 
             fn visit_u64<E>(self, u: u64) -> Result<Self::Value, E>
             where
                 E: de::Error,
             {
-                Ok(Identifier::Id(u as u32))
+                Ok(Identifier::Id(u))
             }
         }
 
@@ -128,14 +128,14 @@ impl<'de> serde::de::Deserialize<'de> for ModDependency {
             where
                 E: serde::de::Error,
             {
-                Ok(ModDependency::Simple(Identifier::Id(u as u32)))
+                Ok(ModDependency::Simple(Identifier::Id(u as u64)))
             }
 
             fn visit_u64<E>(self, u: u64) -> Result<Self::Value, E>
             where
                 E: serde::de::Error,
             {
-                Ok(ModDependency::Simple(Identifier::Id(u as u32)))
+                Ok(ModDependency::Simple(Identifier::Id(u)))
             }
 
             fn visit_map<V>(self, map: V) -> Result<Self::Value, V::Error>

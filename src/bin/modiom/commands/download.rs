@@ -5,6 +5,7 @@ use std::path::PathBuf;
 use tokio::runtime::Runtime;
 
 use modio::filter::prelude::*;
+use modio::types::id::ModId;
 use modiom::config::Config;
 
 use crate::command_prelude::*;
@@ -38,7 +39,7 @@ pub fn cli() -> Command {
 
 pub fn exec(config: &Config, args: &ArgMatches) -> CliResult {
     let game_id = *args.get_one("game-id").expect("required arg");
-    let mod_ids = args.get_many::<u32>("mod-id").expect("required arg");
+    let mod_ids = args.get_many("mod-id").expect("required arg");
     let _with_deps = args.get_flag("with-dependencies");
     let dest = args
         .get_one::<PathBuf>("dest")
@@ -49,7 +50,7 @@ pub fn exec(config: &Config, args: &ArgMatches) -> CliResult {
     let modio_ = client(config)?;
 
     let mod_ids = mod_ids.copied().collect::<Vec<_>>();
-    let mut missing_mods: HashSet<u32> = HashSet::new();
+    let mut missing_mods: HashSet<ModId> = HashSet::new();
     missing_mods.extend(&mod_ids);
 
     let filter = Id::_in(mod_ids);
@@ -62,7 +63,7 @@ pub fn exec(config: &Config, args: &ArgMatches) -> CliResult {
                 println!("Downloading: {}", file.download.binary_url);
 
                 let out = dest.join(&file.filename);
-                rt.block_on(modio_.download(file).save_to_file(out))?;
+                rt.block_on(async { modio_.download(file).await?.save_to_file(out).await })?;
             }
             missing_mods.remove(&m.id);
         }

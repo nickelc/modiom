@@ -81,10 +81,10 @@ pub fn exec(config: &Config, args: &ArgMatches) -> CliResult {
                 [b -> "Tags", format!("[{}]", tags)],
                 [b -> "Dependencies", format!("{:?}", deps)]
             );
-            let mut primary = 0;
+            let mut primary = None;
             mt.set_format(*format::consts::FORMAT_CLEAN);
             if let Some(file) = m.modfile {
-                primary = file.id;
+                primary = Some(file.id);
                 mt.add_empty_row();
                 mt.add_row(row![bH2 -> "File"]);
                 mt.add_row(row![b -> "Id", file.id]);
@@ -128,7 +128,7 @@ pub fn exec(config: &Config, args: &ArgMatches) -> CliResult {
                 );
                 ft.set_format(*format::consts::FORMAT_CLEAN);
                 for file in files {
-                    let suffix = if primary == file.id { "*" } else { "" };
+                    let suffix = if primary == Some(file.id) { "*" } else { "" };
                     ft.add_row(row![
                         format!("{}{}", file.id, suffix),
                         file.filename,

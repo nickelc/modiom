@@ -5,13 +5,14 @@ use prettytable::{format, Table};
 use tokio::runtime::Runtime;
 
 use modio::filter::prelude::*;
-use modio::mods::Mod;
+use modio::types::id;
+use modio::types::mods::Mod;
 use modio::user::filters::subscriptions::*;
 use modiom::config::Config;
 
 use crate::command_prelude::*;
 
-type Subs = BTreeMap<u32, Vec<Mod>>;
+type Subs = BTreeMap<id::GameId, Vec<Mod>>;
 
 pub fn cli() -> Command {
     Command::new("subscriptions")
@@ -69,7 +70,7 @@ pub fn exec(config: &Config, args: &ArgMatches) -> CliResult {
 }
 
 fn list_subs(config: &Config, args: &ArgMatches) -> CliResult {
-    let game_id = args.get_one::<u32>("game-id");
+    let game_id = args.get_one::<id::GameId>("game-id");
 
     let rt = Runtime::new()?;
     let m = client(config)?;

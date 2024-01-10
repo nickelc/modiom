@@ -2,6 +2,7 @@ use std::path::Path;
 
 use futures::{stream, TryStreamExt};
 use modio::filter::prelude::*;
+use modio::types::id::GameId;
 use modiom::manifest::{self, Identifier};
 use tokio::runtime::Runtime;
 
@@ -25,7 +26,7 @@ pub fn exec(config: &Config, args: &ArgMatches) -> CliResult {
 
     let tasks = async {
         let game_id = match manifest.game.id {
-            Identifier::Id(id) => id,
+            Identifier::Id(id) => GameId::new(id),
             Identifier::NameId(ref id) => {
                 let filter = NameId::eq(id);
                 let first = modio.games().search(filter).first().await?;
@@ -60,7 +61,7 @@ pub fn exec(config: &Config, args: &ArgMatches) -> CliResult {
                         let file = m.modfile.unwrap();
                         println!("Downloading: {}", file.download.binary_url);
                         let out = Path::new(&file.filename).to_path_buf();
-                        modio.download(file).save_to_file(out).await?;
+                        modio.download(file).await?.save_to_file(out).await?;
                         Ok(())
                     }
                 }
