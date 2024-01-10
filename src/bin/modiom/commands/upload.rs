@@ -50,7 +50,11 @@ pub fn cli() -> Command {
                 .value_name("FILE")
                 .required(true)
                 .value_parser(PathBufValueParser::new().try_map(|path| {
-                    if path.is_file() && path.ends_with(".zip") {
+                    if path.is_file()
+                        && path
+                            .extension()
+                            .map_or(false, |ext| ext.eq_ignore_ascii_case("zip"))
+                    {
                         return Ok(path);
                     }
                     Err(String::from("File is not a zip."))
