@@ -5,12 +5,12 @@ use std::io;
 use std::path::{Path, PathBuf};
 
 pub use clap::builder::{
-    Arg, ArgAction, ArgGroup, Command, PathBufValueParser, TypedValueParser, ValueParser,
+    Arg, ArgAction, Command, PathBufValueParser, TypedValueParser, ValueParser,
 };
 pub use clap::{value_parser, ArgMatches};
 pub use modiom::config::Config;
 pub use modiom::{CliResult, Result};
-pub use prettytable::{cell, row, table};
+pub use prettytable::{row, table};
 
 use modiom::utils::find_manifest_for_wd;
 
