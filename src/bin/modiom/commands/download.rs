@@ -1,6 +1,5 @@
 use std::borrow::Cow;
 use std::collections::HashSet;
-use std::path::PathBuf;
 
 use tokio::runtime::Runtime;
 
@@ -41,10 +40,7 @@ pub fn exec(config: &Config, args: &ArgMatches) -> CliResult {
     let game_id = *args.get_one("game-id").expect("required arg");
     let mod_ids = args.get_many("mod-id").expect("required arg");
     let _with_deps = args.get_flag("with-dependencies");
-    let dest = args
-        .get_one::<PathBuf>("dest")
-        .map(Cow::from)
-        .unwrap_or_default();
+    let dest = args.get_path("dest").map(Cow::from).unwrap_or_default();
 
     let rt = Runtime::new()?;
     let modio_ = client(config)?;

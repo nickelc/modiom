@@ -1,5 +1,4 @@
 use std::borrow::Cow;
-use std::path::PathBuf;
 
 use futures::{future::try_join3, StreamExt};
 use prettytable::format;
@@ -65,10 +64,7 @@ pub fn cli() -> Command {
 pub fn exec(config: &Config, args: &ArgMatches) -> CliResult {
     let game_id = *args.get_one("game").expect("required arg");
     let mod_id = *args.get_one("mod").expect("required arg");
-    let src = args
-        .get_string("src")
-        .map(PathBuf::from)
-        .expect("required arg");
+    let src = args.get_path("src").expect("required arg");
 
     let rt = Runtime::new()?;
     let modio = client(config)?;

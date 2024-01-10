@@ -58,7 +58,7 @@ pub trait ArgMatchesExt {
     }
 
     fn root_manifest(&self, config: &Config) -> io::Result<Cow<Path>> {
-        if let Some(path) = self._get_one::<PathBuf>("manifest-path") {
+        if let Some(path) = self.get_path("manifest-path") {
             if !path.ends_with("Modio.toml") {
                 return Err(io::Error::new(
                     io::ErrorKind::InvalidInput,
@@ -78,6 +78,10 @@ pub trait ArgMatchesExt {
 
     fn get_string(&self, id: &str) -> Option<&String> {
         self._get_one::<String>(id)
+    }
+
+    fn get_path(&self, id: &str) -> Option<&PathBuf> {
+        self._get_one::<PathBuf>(id)
     }
 }
 
