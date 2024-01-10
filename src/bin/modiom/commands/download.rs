@@ -5,7 +5,7 @@ use std::path::PathBuf;
 use tokio::runtime::Runtime;
 
 use modio::filter::prelude::*;
-use modio::types::id::ModId;
+use modio::types::id::{GameId, ModId};
 use modiom::config::Config;
 
 use crate::command_prelude::*;
@@ -18,14 +18,14 @@ pub fn cli() -> Command {
                 .value_name("ID")
                 .num_args(1)
                 .required(true)
-                .value_parser(value_parser!(u32)),
+                .value_parser(value_parser!(GameId)),
         )
         .arg(
             opt("mod-id", "Specify a mod id")
                 .value_name("ID")
                 .num_args(1)
                 .required(true)
-                .value_parser(value_parser!(u32))
+                .value_parser(value_parser!(ModId))
                 .action(ArgAction::Append),
         )
         //.arg(opt("with-dependencies", ""))
