@@ -30,3 +30,6 @@ toml = "0.8.8"
 version = "0.9.1"
 default-features = false
 features = ["rustls-tls"]
+
+[profile.release]
+strip = true
