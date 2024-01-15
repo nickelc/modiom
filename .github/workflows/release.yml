@@ -42,34 +42,51 @@ jobs:
           sudo apt-get install -y --no-install-recommends musl-tools
 
       - name: Build
-        run: cargo build --release --target ${{ matrix.target }}
-
-      - name: Package
-        id: package
         shell: bash
         run: |
-          version=${GITHUB_REF#refs/tags/}
-          staging="modiom-$version-${{ matrix.target }}"
-          mkdir -p "$staging"
-
-          cp {README.md,LICENSE-APACHE,LICENSE-MIT} "$staging/"
+          cargo build --release --target "${{ matrix.target }}"
 
           if [ "${{ runner.os }}" = "Windows" ]; then
-            cp "target/${{ matrix.target }}/release/modiom.exe" "$staging/"
-            7z a "$staging.zip" "$staging"
-            echo "ASSET=$staging.zip" >> $GITHUB_OUTPUT
+            bin="target/${{ matrix.target }}/release/modiom.exe"
           else
-            cp "target/${{ matrix.target }}/release/modiom" "$staging/"
-            tar czf "$staging.tar.gz"  "$staging"
-            echo "ASSET=$staging.tar.gz" >> $GITHUB_OUTPUT
+            bin="target/${{ matrix.target }}/release/modiom"
           fi
+          echo "BIN=$bin" >>"$GITHUB_ENV"
 
-      - name: Upload
-        uses: actions/upload-release-asset@v1.0.1
+      - name: Determine archive name
+        shell: bash
+        run: |
+          version="$GITHUB_REF_NAME"
+          echo "ARCHIVE=modiom-$version-${{ matrix.target }}" >>"$GITHUB_ENV"
+
+      - name: Creating directory for archive
+        shell: bash
+        run: |
+          mkdir -p "$ARCHIVE"
+          cp "$BIN" "$ARCHIVE"/
+          cp {README.md,LICENSE-APACHE,LICENSE-MIT} "$ARCHIVE/"
+
+      - name: Build archive (Windows)
+        shell: bash
+        if: runner.os == 'Windows'
+        run: |
+          7z a "$ARCHIVE.zip" "$ARCHIVE"
+          certutil -hashfile "$ARCHIVE.zip" SHA256 >"$ARCHIVE.zip.sha256"
+          echo "ASSET=$ARCHIVE.zip" >>"$GITHUB_ENV"
+          echo "ASSET_SUM=$ARCHIVE.zip.sha256" >>"$GITHUB_ENV"
+
+      - name: Build archive (Unix)
+        shell: bash
+        if: runner.os != 'Windows'
+        run: |
+          tar czf "$ARCHIVE.tar.gz" "$ARCHIVE"
+          shasum -a 256 "$ARCHIVE.tar.gz" >"$ARCHIVE.tar.gz.sha256"
+          echo "ASSET=$ARCHIVE.tar.gz" >>"$GITHUB_ENV"
+          echo "ASSET_SUM=$ARCHIVE.tar.gz.sha256" >>"$GITHUB_ENV"
+
+      - name: Upload release archive
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_name: ${{ steps.package.outputs.ASSET }}
-          asset_path: ${{ steps.package.outputs.ASSET }}
-          asset_content_type: application/octet-stream
+        shell: bash
+        run:
+          gh release upload "${{ github.ref_name }}" "$ASSET" "$ASSET_SUM"
