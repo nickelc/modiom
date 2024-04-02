@@ -3,8 +3,8 @@ use prettytable::format;
 use textwrap::fill;
 use tokio::runtime::Runtime;
 
+use modio::filter::Filter;
 use modio::types::id::{GameId, ModId};
-use modiom::config::Config;
 
 use crate::command_prelude::*;
 
@@ -40,7 +40,7 @@ pub fn exec(config: &Config, args: &ArgMatches) -> CliResult {
 
     let files = async {
         if args.get_flag("files") {
-            let f = Default::default();
+            let f = Filter::default();
             modref.files().search(f).first_page().map_ok(Some).await
         } else {
             Ok(None)
@@ -79,8 +79,8 @@ pub fn exec(config: &Config, args: &ArgMatches) -> CliResult {
                 [b -> "Summary", fill(&m.summary, 60)],
                 [b -> "Profile", m.profile_url],
                 [b -> "Homepage", m.homepage_url.map(|u| u.to_string()).unwrap_or_default()],
-                [b -> "Tags", format!("[{}]", tags)],
-                [b -> "Dependencies", format!("{:?}", deps)]
+                [b -> "Tags", format!("[{tags}]")],
+                [b -> "Dependencies", format!("{deps:?}")]
             );
             let mut primary = None;
             mt.set_format(*format::consts::FORMAT_CLEAN);
@@ -131,7 +131,7 @@ pub fn exec(config: &Config, args: &ArgMatches) -> CliResult {
                 for file in files {
                     let suffix = if primary == Some(file.id) { "*" } else { "" };
                     ft.add_row(row![
-                        format!("{}{}", file.id, suffix),
+                        format!("{}{suffix}", file.id),
                         file.filename,
                         file.version.unwrap_or_default(),
                         file.download.binary_url
@@ -140,7 +140,7 @@ pub fn exec(config: &Config, args: &ArgMatches) -> CliResult {
                 ft.printstd();
             }
         }
-        Err(e) => println!("{}", e),
+        Err(e) => println!("{e}"),
     };
     Ok(())
 }

@@ -33,7 +33,7 @@ pub fn exec(config: &Config, args: &ArgMatches) -> CliResult {
                 if let Some(game) = first {
                     game.id
                 } else {
-                    return Err(format!("no matching game named `{}` found", id).into());
+                    return Err(format!("no matching game named `{id}` found").into());
                 }
             }
         };
@@ -43,11 +43,11 @@ pub fn exec(config: &Config, args: &ArgMatches) -> CliResult {
             let not_found: Box<dyn std::error::Error> = match m.id() {
                 Identifier::Id(id) => {
                     filter = Id::eq(id);
-                    format!("mod with id `{}` not found", id).into()
+                    format!("mod with id `{id}` not found").into()
                 }
                 Identifier::NameId(id) => {
                     filter = NameId::eq(id);
-                    format!("mod with name-id `{}` not found", id).into()
+                    format!("mod with name-id `{id}` not found").into()
                 }
             };
             tasks.push(async {

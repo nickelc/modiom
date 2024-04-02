@@ -1,6 +1,3 @@
-use modiom::config::Config;
-use modiom::CliResult;
-
 mod command_prelude;
 mod commands;
 
@@ -24,7 +21,7 @@ fn main() -> CliResult {
 
     match commands::exec(&config, &args) {
         Err(e) => {
-            eprintln!("{}", e);
+            eprintln!("{e}");
             std::process::exit(1);
         }
         Ok(()) => Ok(()),

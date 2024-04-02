@@ -7,8 +7,7 @@ use tokio::runtime::Runtime;
 use modio::filter::prelude::*;
 use modio::types::id;
 use modio::types::mods::Mod;
-use modio::user::filters::subscriptions::*;
-use modiom::config::Config;
+use modio::user::filters::subscriptions::GameId;
 
 use crate::command_prelude::*;
 
@@ -78,7 +77,7 @@ fn list_subs(config: &Config, args: &ArgMatches) -> CliResult {
     let filter = if let Some(game_id) = game_id {
         GameId::eq(game_id)
     } else {
-        Default::default()
+        Filter::default()
     };
 
     let task = async {

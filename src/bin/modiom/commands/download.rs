@@ -5,7 +5,6 @@ use tokio::runtime::Runtime;
 
 use modio::filter::prelude::*;
 use modio::types::id::{GameId, ModId};
-use modiom::config::Config;
 
 use crate::command_prelude::*;
 
@@ -64,7 +63,7 @@ pub fn exec(config: &Config, args: &ArgMatches) -> CliResult {
         }
     }
     for mm in missing_mods {
-        println!("Mod.id: {} does not exist or has no primary file. ", mm);
+        println!("Mod.id: {mm} does not exist or has no primary file.");
     }
 
     Ok(())

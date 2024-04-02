@@ -9,7 +9,6 @@ use tokio_util::io::ReaderStream;
 
 use modio::files::AddFileOptions;
 use modio::types::id::{GameId, ModId};
-use modiom::config::Config;
 use modiom::md5::Md5;
 
 use crate::command_prelude::*;
@@ -79,7 +78,7 @@ pub fn exec(config: &Config, args: &ArgMatches) -> CliResult {
     } else {
         src.file_name()
             .and_then(|n| n.to_str())
-            .map(|n| n.to_string())
+            .map(ToString::to_string)
             .ok_or("Failed to get the filename")?
             .into()
     };
@@ -139,7 +138,7 @@ pub fn exec(config: &Config, args: &ArgMatches) -> CliResult {
             ft.set_format(*format::consts::FORMAT_CLEAN);
             ft.printstd();
         }
-        Err(e) => println!("{}", e),
+        Err(e) => println!("{e}"),
     }
     Ok(())
 }

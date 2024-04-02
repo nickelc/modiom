@@ -125,7 +125,7 @@ impl fmt::Display for Condition {
 mod parser {
     use std::str::FromStr;
 
-    use super::*;
+    use super::{Condition, Expr, Literal, Operator};
 
     use nom::branch::alt;
     use nom::bytes::complete::{tag, tag_no_case, take_until, take_while};
@@ -323,7 +323,7 @@ mod parser {
                 let msg = match e {
                     nom::Err::Error(Error { input, .. })
                     | nom::Err::Failure(Error { input, .. }) => {
-                        format!("failed to parse {:?}", input)
+                        format!("failed to parse {input:?}")
                     }
                     nom::Err::Incomplete(_) => String::from("failed to parse expression"),
                 };
@@ -338,8 +338,8 @@ mod parser {
             Ok((_, (None, right))) => {
                 let op = match right {
                     Condition::Literal(Literal::String(ref s)) if s.contains('*') => Operator::Like,
+                    Condition::Literal(_) => Operator::Equals,
                     Condition::LiteralList(_) => Operator::In,
-                    _ => Operator::Equals,
                 };
                 (op, right)
             }
@@ -347,7 +347,7 @@ mod parser {
                 let msg = match e {
                     nom::Err::Error(Error { input, .. })
                     | nom::Err::Failure(Error { input, .. }) => {
-                        format!("failed to parse {:?}", input)
+                        format!("failed to parse {input:?}")
                     }
                     nom::Err::Incomplete(_) => String::from("failed to parse expression"),
                 };

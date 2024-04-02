@@ -1,11 +1,8 @@
 use std::io::{self, BufRead, Write};
 
-use clap::Arg;
 use modio::auth::Credentials;
 use modio::Modio;
 use tokio::runtime::Runtime;
-
-use modiom::config::Config;
 
 use crate::command_prelude::*;
 
@@ -22,18 +19,17 @@ pub fn exec(config: &Config, args: &ArgMatches) -> CliResult {
     let token = match (api_key, token) {
         (Some(api_key), Some(token)) => Credentials::with_token(api_key, token),
         (api_key, _) => {
-            let api_key = match api_key {
-                Some(api_key) => api_key.into(),
-                None => {
-                    let url = if args.is_test_env() {
-                        "https://test.mod.io/apikey"
-                    } else {
-                        "https://mod.io/apikey"
-                    };
-                    println!("Please visit {} and paste the API key below", url);
+            let api_key = if let Some(api_key) = api_key {
+                api_key.into()
+            } else {
+                let url = if args.is_test_env() {
+                    "https://test.mod.io/apikey"
+                } else {
+                    "https://mod.io/apikey"
+                };
+                println!("Please visit {url} and paste the API key below");
 
-                    prompt("Enter api key: ")?
-                }
+                prompt("Enter api key: ")?
             };
             let email = prompt("Enter email: ")?;
 
@@ -47,7 +43,7 @@ pub fn exec(config: &Config, args: &ArgMatches) -> CliResult {
                 let code = prompt("Enter security code: ")?;
                 match rt.block_on(m.auth().security_code(&code)) {
                     Ok(token) => break token,
-                    Err(err) => println!("{}", err),
+                    Err(err) => println!("{err}"),
                 };
             }
         }
@@ -70,7 +66,7 @@ pub fn exec(config: &Config, args: &ArgMatches) -> CliResult {
 }
 
 fn prompt(prompt: &str) -> io::Result<String> {
-    print!("{}", prompt);
+    print!("{prompt}");
     io::stdout().flush()?;
     let mut buf = String::new();
     let input = io::stdin();

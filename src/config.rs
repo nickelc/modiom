@@ -71,9 +71,9 @@ impl Config {
         let config = self.load_config()?;
         if let Some(creds) = config.hosts.get(self.host()) {
             Ok(Some(Credentials {
-                api_key: creds.api_key.to_owned(),
+                api_key: creds.api_key.clone(),
                 token: Some(modio::auth::Token {
-                    value: creds.token.to_owned(),
+                    value: creds.token.clone(),
                     expired_at: None,
                 }),
             }))

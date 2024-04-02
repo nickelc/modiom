@@ -27,10 +27,10 @@ pub fn read(path: &Path) -> io::Result<String> {
     Ok(ret)
 }
 
-pub fn copy<R: ?Sized, W: ?Sized>(reader: &mut R, writer: &mut W) -> io::Result<u64>
+pub fn copy<R, W>(reader: &mut R, writer: &mut W) -> io::Result<u64>
 where
-    R: Read,
-    W: Write,
+    R: Read + ?Sized,
+    W: Write + ?Sized,
 {
     let mut buf = vec![0; 512 * 512];
     let mut written = 0;

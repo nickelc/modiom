@@ -4,7 +4,6 @@ use tokio::runtime::Runtime;
 use modio::filter::custom_filter;
 use modio::filter::prelude::*;
 use modio::types::id::GameId;
-use modiom::config::Config;
 
 use crate::command_prelude::*;
 use crate::commands::expr;
@@ -72,7 +71,7 @@ pub fn exec(config: &Config, args: &ArgMatches) -> CliResult {
             f = f.and(custom_filter(e.property, e.op.into(), e.right.into_value()));
         }
         if let Some(ft) = args.get_string("ft") {
-            filter.add_row(row![format!("fulltext = {:?}", ft)]);
+            filter.add_row(row![format!("fulltext = {ft:?}")]);
             f = f.and(Fulltext::eq(ft));
         }
         if !filter.is_empty() {
@@ -104,7 +103,7 @@ pub fn exec(config: &Config, args: &ArgMatches) -> CliResult {
             f = f.and(custom_filter(e.property, e.op.into(), e.right.into_value()));
         }
         if let Some(ft) = args.get_string("ft") {
-            filter.add_row(row![format!("fulltext = {:?}", ft)]);
+            filter.add_row(row![format!("fulltext = {ft:?}")]);
             f = f.and(Fulltext::eq(ft));
         }
         if !filter.is_empty() {
