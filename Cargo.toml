@@ -27,7 +27,7 @@ tokio-util = { version = "0.7.10", features = ["io"] }
 toml = "0.8.12"
 
 [dependencies.modio]
-version = "0.10.0"
+version = "0.10.1"
 default-features = false
 features = ["rustls-tls"]
 
