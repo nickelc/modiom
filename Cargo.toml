@@ -1,6 +1,6 @@
 [package]
 name = "modiom"
-version = "0.5.1"
+version = "0.5.2"
 description = "command line tool for mod.io"
 repository = "https://github.com/nickelc/modiom"
 license = "MIT/Apache-2.0"
