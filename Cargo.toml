@@ -13,8 +13,8 @@ edition = "2018"
 name = "modiom"
 
 [dependencies]
-bytes = "1.5.0"
-clap = "4.5.1"
+bytes = "1.6.1"
+clap = "4.5.9"
 futures = { version = "0.3", default-features = false, features = ["alloc"] }
 home = "0.5.9"
 md-5 = "0.10"
@@ -22,9 +22,9 @@ nom = { version = "7.1", default-features = false, features = ["alloc"] }
 prettytable-rs = { version = "0.10", default-features = false }
 serde = { version = "1", features = ["derive"] }
 textwrap = { version = "0.16", default-features = false, features = ["unicode-width", "smawk"] }
-tokio = { version = "1.37.0", features = ["rt-multi-thread"] }
+tokio = { version = "1.38.0", features = ["rt-multi-thread"] }
 tokio-util = { version = "0.7.10", features = ["io"] }
-toml = "0.8.12"
+toml = "0.8.14"
 
 [dependencies.modio]
 version = "0.10.1"
