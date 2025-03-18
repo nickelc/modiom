@@ -51,7 +51,7 @@ pub fn cli() -> Command {
                     if path.is_file()
                         && path
                             .extension()
-                            .map_or(false, |ext| ext.eq_ignore_ascii_case("zip"))
+                            .is_some_and(|ext| ext.eq_ignore_ascii_case("zip"))
                     {
                         return Ok(path);
                     }
